@@ -1,5 +1,5 @@
 # QAULITY OF LIFE HELPER ROUTINES
-These are some helper routines that I want to be able to load without rewriting them every time. For instance, now that I've found a way in which I prefer to format my matplotlib figures, I don't want to have to copy and paste the corresponding 10 lines of code every time. Instead, I prefer to define a callable function that implements this routine. This repo is full of such callable functions for tasks which I want to do often in many different projects.
+These are some helper routines that I want to be able to load without rewriting them every time. For instance, now that I've found a way in which I prefer to format my matplotlib figures, I don't want to have to copy and paste the corresponding 10 lines of code every time. Instead, I prefer to define a callable function that implements this routine. This repo is full of such callable functions for tasks which I want to do often in many different projects. That said, if you have multiple versions of python on you'll computer, then you may want to be mindful of which version's terminal you're executing `import os; import sys; print(os.path.dirname(sys.executable))` in.
 
 ---
 
