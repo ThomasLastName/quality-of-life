@@ -6,7 +6,7 @@ These are some helper routines that I want to be able to load without rewriting 
 # Usage
 That's up to you! However, please credit me with a comment like `# from https://github.com/ThomasLastName/quality_of_life` in your code, if you use these!
 
-**Recommendation (Green Ouput, Yellow Warnings, and Red Errors):** After installing this code (wchich basically consists of putting a folder called `quality_of_life` containing these `.py` files in your `Lib` folder), I recommend either creating a `usercustomize.py` file in your `Lib` folder containing the following code
+**Recommendation (Green Ouput, Yellow Warnings, and Red Errors):** After installing this code (wchich basically consists of putting a folder called `quality_of_life` containing these `.py` files in your `Lib` folder), I recommend creating a `usercustomize.py` file in your `Lib` folder containing the following code
 ```
 #
 #~~~ Green outputs
@@ -18,7 +18,7 @@ from quality_of_life.my_base_utils import red_errors
 red_errors()
 ```
 
-or, if you already have a `usercustomize.py` file, consider adding the above code to it. Additionally, in the source code for `warnings.py` (also in your `Lib` folder), I recommend modifying the definition of `_showwarnmsg_impl` so that warnings will print in yellow
+or, if you already have a `usercustomize.py` file, consider adding the above code to it. Additionally, in the source code for `warnings.py` (also in your `Lib` folder), I recommend modifying the definition of `_showwarnmsg_impl` as follows so that warnings will print in yellow
 
 ```
 #
