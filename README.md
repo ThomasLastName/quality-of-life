@@ -3,6 +3,11 @@ These are some helper routines that I want to be able to load without rewriting 
 
 ---
 
+# Documentation
+Boy, I sure hope to write some!
+
+---
+
 # Usage
 That's up to you! However, please credit me with a comment along the lines of `# ~~~ Tom wrote these; maintained at https://github.com/ThomasLastName/quality_of_life` in your code, if you use these!
 
