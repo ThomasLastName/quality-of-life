@@ -48,7 +48,7 @@ This repo depends on some standard libraries.
 **List of Requirements in Order to Use this Code:**
 - [x] Have python installed and know how to edit and run python files
 - [x] **(important)** Know the directory of your python's `Lib` folder (see below)
-- [x] Have the prerequisite standard packages installed: `numpy`, `matplotlib`, and `quality_of_life` `tensorflow`, `pytorch`, `sklearn`.
+- [x] Have the prerequisite standard packages installed: `numpy`, `matplotlib`, `tensorflow`, `pytorch`, and `sklearn`.
 
 **More on the Directory of Your Python's `Lib` Folder:** Unless you made a point of moving python after installing it, this will be the directory to which you installed python, plus `\Lib`. For example, on my personal computer, python is located in the folder  `C:\Users\thoma\AppData\Local\Programs\Python\Python310`, within which many things are contained, including a folder called `Lib`. Thus, the directory of my `Lib` folder is `C:\Users\thoma\AppData\Local\Programs\Python\Python310\Lib`. For reference, this is also where many of python's base modules are stored, such as `warnings.py`, `pickle.py`, and `turtle.py`.
 
