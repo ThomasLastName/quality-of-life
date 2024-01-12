@@ -4,7 +4,7 @@ These are some helper routines that I want to be able to load without rewriting 
 ---
 
 # Documentation
-Boy, I sure hope to write some!
+Boy, I sure should write some!
 
 ---
 
