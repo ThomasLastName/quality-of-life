@@ -58,7 +58,7 @@ I recommend having the directory where your version python is installed written 
 
 # Installation
 
-Basically, just create a folder called `quality_of_life` inside of your python's `Lib` folder, and fill it with the files from this repository
+Basically, just create a folder called `quality_of_life` inside of your python's `Lib` folder, and fill it with the files from this repository.
 
 ---
 
