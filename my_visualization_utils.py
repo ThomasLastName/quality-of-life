@@ -1,4 +1,3 @@
-from distutils.ccompiler import new_compiler
 from matplotlib import pyplot as plt
 import numpy as np
 from quality_of_life.my_base_utils import my_warn

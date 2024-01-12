@@ -42,7 +42,7 @@ def underline(message):
 
 """
 ~
-~ RECOMMENDED: in the source code for warnings.py, modify the definition of _showwarnmsg_impl as follows to achieve yellow errors
+~ RECOMMENDED: in the source code for warnings.py, modify the definition of _showwarnmsg_impl as follows to achieve yellow warnings
 ~
 
 #
@@ -62,24 +62,4 @@ def _showwarnmsg_impl(msg):
     except OSError:
         # the file (probably stderr) is invalid - this warning gets lost.
         pass
-
-~
-~ RECOMMENDED: : create a usercustomize.py file in Lib if none exists; once one exists add the following two lines to it
-~
-#
-#~~~ Red errors
-import sys
-import traceback
-from quality_of_life.ansi import bcolors
-def red_errors(type, value, traceback_obj):
-    # Get the original error message
-    error_message = ''.join(traceback.format_exception(type, value, traceback_obj))
-    # Append frowning face emoji to the original error message
-    modified_error_message = bcolors.FAIL + error_message.rstrip() + bcolors.ENDC + " \U0001F62D"
-    # Print the modified error message
-    print( modified_error_message, file=sys.stderr )
-
-#
-#~~~ Override the default excepthook with the custom_excepthook
-sys.excepthook = red_errors
 """
