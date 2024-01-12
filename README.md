@@ -6,6 +6,40 @@ These are some helper routines that I want to be able to load without rewriting 
 # Usage
 That's up to you! However, please credit me with a comment like `# from https://github.com/ThomasLastName/quality_of_life` in your code, if you use these!
 
+**Recommendation (Green Ouput, Yellow Warnings, and Red Errors):** After installing this code (wchich basically consists of putting a folder called `quality_of_life` containing these `.py` files in your `Lib` folder), I recommend either creating a `usercustomize.py` file in your `Lib` folder containing the following code
+```
+#
+#~~~ Green outputs
+from quality_of_life.my_base_utils import colored_console_output
+colored_console_output(warn=False)
+#
+#~~~ Red errors
+from quality_of_life.my_base_utils import red_errors
+red_errors()
+```
+
+or, if you already have a `usercustomize.py` file, consider adding the above code to it. Additionally, in the source code for `warnings.py` (also in your `Lib` folder), I recommend modifying the definition of `_showwarnmsg_impl` so that warnings will print in yellow
+
+```
+#
+# ~~~ Yellow warnings
+def _showwarnmsg_impl(msg):
+    from quality_of_life.ansi import bcolors
+    file = msg.file
+    if file is None:
+        file = sys.stderr
+        if file is None:
+            # sys.stderr is None when run with pythonw.exe:
+            # warnings get lost
+            return
+    text = bcolors.WARNING+_formatwarnmsg(msg)+bcolors.ENDC
+    try:
+        file.write(text)
+    except OSError:
+        # the file (probably stderr) is invalid - this warning gets lost.
+        pass
+```
+
 ---
 
 # Prerequisites for Using This Code
@@ -14,7 +48,7 @@ This repo depends on some standard libraries.
 **List of Requirements in Order to Use this Code:**
 - [x] Have python installed and know how to edit and run python files
 - [x] **(important)** Know the directory of your python's `Lib` folder (see below)
-- [x] Have the prerequisite standard packages installed: `numpy`, `matplotlib`, and `quality_of_life` `tensorflow`, `pytorch`, `sklearn`, and `alive_progress`
+- [x] Have the prerequisite standard packages installed: `numpy`, `matplotlib`, and `quality_of_life` `tensorflow`, `pytorch`, `sklearn`.
 
 **More on the Directory of Your Python's `Lib` Folder:** Unless you made a point of moving python after installing it, this will be the directory to which you installed python, plus `\Lib`. For example, on my personal computer, python is located in the folder  `C:\Users\thoma\AppData\Local\Programs\Python\Python310`, within which many things are contained, including a folder called `Lib`. Thus, the directory of my `Lib` folder is `C:\Users\thoma\AppData\Local\Programs\Python\Python310\Lib`. For reference, this is also where many of python's base modules are stored, such as `warnings.py`, `pickle.py`, and `turtle.py`.
 
