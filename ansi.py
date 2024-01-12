@@ -1,3 +1,6 @@
+
+# ~~~ Tom Winckelman wrote this; maintained at: https://github.com/ThomasLastName/quality_of_life
+
 import platform
 import os
 import sys
