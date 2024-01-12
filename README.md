@@ -47,7 +47,7 @@ def _showwarnmsg_impl(msg):
 ---
 
 # Prerequisites for Using This Code
-This repo depends on some standard libraries.
+This repo depends only on some standard libraries.
 
 **List of Requirements in Order to Use this Code:**
 - [x] Have python installed and know how to edit and run python files
