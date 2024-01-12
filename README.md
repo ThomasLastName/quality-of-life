@@ -56,7 +56,13 @@ I recommend having the directory where your version python is installed written 
 
 ---
 
-# Installation Using git (recommended)
+# Installation
+
+Basically, just create a folder called `quality_of_life` inside of your python's `Lib` folder, and fill it with the files from this repository
+
+---
+
+## Detailed Installation Instructions Using git (recommended)
 
 **Additional Prerequisites Using git:**
 - [x] Have git installed on your computer
@@ -73,7 +79,7 @@ For instance, to continue the example above, if I created the folder `quality_of
 
 ---
 
-# Installation Using the Graphical Interface
+## Detailed Installation Instructions Using the Graphical Interface
 
 **Installation Steps Using the Graphical Interface:**
 Click the colorful `<> Code` button at [https://github.com/ThomasLastName/quality_of_life](https://github.com/ThomasLastName/quality_of_life) and select `Download ZIP` from the dropdown menu. This should download a zipped folder called `quality_of_life` containing within it an unzipped folder of the same name, which you just need to click and drag (or copy and paste) into the `Lib` folder of your preferred version of python.
