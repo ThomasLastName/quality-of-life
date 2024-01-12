@@ -6,7 +6,10 @@ These are some helper routines that I want to be able to load without rewriting 
 # Usage
 That's up to you! However, please credit me with a comment along the lines of `# ~~~ Tom wrote these; maintained at https://github.com/ThomasLastName/quality_of_life` in your code, if you use these!
 
-**Recommendation (Green Ouput, Yellow Warnings, and Red Errors):** After installing this code (wchich basically consists of putting a folder called `quality_of_life` containing these `.py` files in your `Lib` folder), I recommend creating a `usercustomize.py` file in your `Lib` folder containing the following code
+---
+
+## Recommend Application: Green Ouput, Yellow Warnings, and Red Errors:
+After installing this code (wchich basically consists of putting a folder called `quality_of_life` containing these `.py` files in your `Lib` folder), I recommend creating a `usercustomize.py` file in your `Lib` folder containing the following code
 ```
 #
 #~~~ Green outputs
