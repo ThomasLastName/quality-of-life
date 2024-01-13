@@ -136,3 +136,33 @@ def points_with_curves(
     else:
         return fig, ax
 
+
+
+#
+# ~~~ A helper routine for plotting (and thus comparing) results
+def side_by_side_prediction_plots( x, y, true_fun, pred_a, pred_b, title_a="One Model", title_b="Another Model", **kwargs ):
+    fig,(ax_a,ax_b) = plt.subplots(1,2)
+    #
+    # ~~~ `None` reverts to default behavior of `points_with_curves, otherwise use what Fouract did in https://github.com/foucart/Mathematical_Pictures_at_a_Data_Science_Exhibition/blob/master/Python/Chapter01.ipynb
+    fig,ax_a = points_with_curves(
+            x = x, 
+            y = y, 
+            curves = (pred_a,true_fun), 
+            title = title_a, 
+            show = False, 
+            fig = fig, 
+            ax = ax_a,
+            **kwargs
+        )
+    fig,ax_b = points_with_curves(
+            x = x, 
+            y = y, 
+            curves = (pred_b,true_fun), 
+            title = title_b, 
+            show = False, 
+            fig = fig, 
+            ax = ax_b,
+            **kwargs
+        )
+    fig.tight_layout()
+    plt.show()
