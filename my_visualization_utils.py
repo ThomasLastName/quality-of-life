@@ -19,11 +19,11 @@ def points_with_curves(
         x,
         y,
         curves,
-        points_label = "Training Data",
-        curve_colors = ( "green", "blue", "orange", "midnightblue", "red", "hotpink" ),
-        marker_size = 4,
-        marker_color = "green",
-        point_mark = 'o',
+        points_label = None,
+        curve_colors = None,
+        marker_size = None,
+        marker_color = None,
+        point_mark = None,
         curve_thicknesses = None,
         curve_labels = None,
         curve_marks = None,
@@ -39,8 +39,18 @@ def points_with_curves(
         model_fit = True    # default usage: the plot to be rendered is meant to visualize a model's fit
     ):
     #
-    #~~~ Automatically set the xlim and ylim such that terrible fits don't make the 
+    #~~~ Automatically set default values for several arguments
     n_curves = len(curves)
+    if points_label is None:
+        points_label = "Training Data"
+    if marker_size is None:
+        marker_size = 4
+    if marker_color is None:
+        marker_color = "green"
+    if point_mark is None:
+        point_mark = 'o'
+    if curve_colors is None:
+        curve_colors = ( "green", "blue", "orange", "midnightblue", "red", "hotpink" )
     if xlim is None:
         xlim = buffer(x)
     if grid is None:
