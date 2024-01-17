@@ -15,7 +15,6 @@ class bcolors:                      # https://stackoverflow.com/a/287944/1159588
     OKCYAN = '\033[96m'
     OKGREEN = '\033[92m'
     WARNING = '\033[93m'
-    PURPLE = '\e[0;35m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
     BOLD = '\033[1m'

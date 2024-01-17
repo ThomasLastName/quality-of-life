@@ -1,9 +1,11 @@
 
 # ~~~ Tom Winckelman wrote this; maintained at: https://github.com/ThomasLastName/quality_of_life
 
+import sys
 from matplotlib import pyplot as plt
 import numpy as np
 from quality_of_life.my_base_utils import my_warn
+this_is_running_in_collab = ('google.colab' in sys.modules)
 
 #
 #~~~ Compute [min-c,max+c] where c>0 is a buffer
@@ -102,7 +104,7 @@ def points_with_curves(
     assert len(curves) <= len(curve_colors)
     #        
     #~~~ Do the thing
-    fig,ax = plt.subplots() if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
+    fig,ax = plt.subplots( figsize = (12,6) if this_is_running_in_collab else None ) if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
     ax.plot( x, y, point_mark, markersize=marker_size, color=marker_color, label=points_label )
     for i in range(n_curves):
         ax.plot( grid, curves[i](grid), curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i] )
@@ -136,12 +138,10 @@ def points_with_curves(
     else:
         return fig, ax
 
-
-
 #
 # ~~~ A helper routine for plotting (and thus comparing) results
 def side_by_side_prediction_plots( x, y, true_fun, pred_a, pred_b, title_a="One Model", title_b="Another Model", **kwargs ):
-    fig,(ax_a,ax_b) = plt.subplots(1,2)
+    fig,(ax_a,ax_b) = plt.subplots( 1, 2, figsize = (12,6) if this_is_running_in_collab else None )
     #
     # ~~~ `None` reverts to default behavior of `points_with_curves, otherwise use what Fouract did in https://github.com/foucart/Mathematical_Pictures_at_a_Data_Science_Exhibition/blob/master/Python/Chapter01.ipynb
     fig,ax_a = points_with_curves(
