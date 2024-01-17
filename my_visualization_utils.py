@@ -38,6 +38,7 @@ def points_with_curves(
         show = True,
         fig = "new",
         ax = "new",
+        figsize = (6,6) if this_is_running_in_collab else None,
         model_fit = True    # default usage: the plot to be rendered is meant to visualize a model's fit
     ):
     #
@@ -104,7 +105,7 @@ def points_with_curves(
     assert len(curves) <= len(curve_colors)
     #        
     #~~~ Do the thing
-    fig,ax = plt.subplots( figsize = (12,6) if this_is_running_in_collab else None ) if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
+    fig,ax = plt.subplots(figsize=figsize) if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
     ax.plot( x, y, point_mark, markersize=marker_size, color=marker_color, label=points_label )
     for i in range(n_curves):
         ax.plot( grid, curves[i](grid), curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i] )
@@ -120,28 +121,35 @@ def points_with_curves(
     #~~~ The following lines replace `plt.legend()` to avoid duplicate labels; source https://stackoverflow.com/a/13589144
     handles, labels = plt.gca().get_legend_handles_labels()
     unique_labels = list(set(labels))  # Get unique labels
-    # Create a dictionary to store handles and line styles for each unique label
-    by_label = {}
+    by_label = {}   # Create a dictionary to store handles and line styles for each unique label
     for label in unique_labels:
         indices = [i for i, x in enumerate(labels) if x == label]  # Find indices for each label
         handle = handles[indices[0]]  # Get the handle for the first occurrence of the label
         line_style = handle.get_linestyle()  # Get the line style
         by_label[label] = (handle, line_style)  # Store handle and line style
-    # Create legend with line styles
     legend_handles = [by_label[label][0] for label in by_label]
     legend_labels = [f"{label}" for label in by_label]  # Include line style in label
-    plt.legend(legend_handles, legend_labels)
+    plt.legend(legend_handles,legend_labels)
     if show:
         fig.tight_layout()
         plt.show()
-        None, None
     else:
         return fig, ax
 
 #
 # ~~~ A helper routine for plotting (and thus comparing) results
-def side_by_side_prediction_plots( x, y, true_fun, pred_a, pred_b, title_a="One Model", title_b="Another Model", **kwargs ):
-    fig,(ax_a,ax_b) = plt.subplots( 1, 2, figsize = (12,6) if this_is_running_in_collab else None )
+def side_by_side_prediction_plots(
+            x,
+            y,
+            true_fun,
+            pred_a,
+            pred_b,
+            title_a = "One Model",
+            title_b = "Another Model",
+            figsize = (12,6) if this_is_running_in_collab else None,
+            **kwargs
+       ):
+    fig,(ax_a,ax_b) = plt.subplots( 1, 2, figsize=figsize )
     #
     # ~~~ `None` reverts to default behavior of `points_with_curves, otherwise use what Fouract did in https://github.com/foucart/Mathematical_Pictures_at_a_Data_Science_Exhibition/blob/master/Python/Chapter01.ipynb
     fig,ax_a = points_with_curves(
