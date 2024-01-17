@@ -5,7 +5,7 @@ import sys
 from matplotlib import pyplot as plt
 import numpy as np
 from quality_of_life.my_base_utils import my_warn
-this_is_running_in_collab = ('google.colab' in sys.modules)
+this_is_running_in_colab = ('google.colab' in sys.modules)
 
 #
 #~~~ Compute [min-c,max+c] where c>0 is a buffer
@@ -38,7 +38,7 @@ def points_with_curves(
         show = True,
         fig = "new",
         ax = "new",
-        figsize = (6,6) if this_is_running_in_collab else None,
+        figsize = (6,6) if this_is_running_in_colab else None,
         model_fit = True    # default usage: the plot to be rendered is meant to visualize a model's fit
     ):
     #
@@ -146,7 +146,7 @@ def side_by_side_prediction_plots(
             pred_b,
             title_a = "One Model",
             title_b = "Another Model",
-            figsize = (12,6) if this_is_running_in_collab else None,
+            figsize = (12,6) if this_is_running_in_colab else None,
             **kwargs
        ):
     fig,(ax_a,ax_b) = plt.subplots( 1, 2, figsize=figsize )
