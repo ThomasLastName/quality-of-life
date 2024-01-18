@@ -91,6 +91,10 @@ I recommend having the directory where your version python is installed written 
 
 ## Detailed Installation Instructions Using the Windows Graphical Interface
 
+**Additional Prerequisites For this Installation Method:**
+- [x] Be using a Windows machine (otherwise, there won't be a `Lib` folder, and you'll need to use your OS's equivalent, whatever that may be)
+- [x] Know the directory of your python's `Lib` folder (see above)
+
 **Installation Steps Using the Graphical Interface:**
 Click the colorful `<> Code` button at [https://github.com/ThomasLastName/quality_of_life](https://github.com/ThomasLastName/quality_of_life) and select `Download ZIP` from the dropdown menu. This should download a zipped folder called `quality_of_life` containing within it an unzipped folder of the same name, which you just need to click and drag (or copy and paste) into the `Lib` folder of your preferred version of python.
 
