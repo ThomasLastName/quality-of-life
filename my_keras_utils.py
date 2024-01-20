@@ -1,20 +1,24 @@
 
 # ~~~ Tom Winckelman wrote this; maintained at: https://github.com/ThomasLastName/quality_of_life
 
+import sys
 import inspect
-import numpy as np
 import tensorflow as tf
+
+
+def keras_seed(semilla):    
+    tf.random.set_seed(semilla)
+    tf.keras.utils.set_random_seed(semilla)
+    if "numpy" in sys.modules.keys():
+        sys.modules["numpy"].random.seed(semilla)
+    if "random" in sys.modules.keys():
+        sys.modules["random"].seed(semilla)
+
 
 ### ~~~
 ## ~~~ Builds a Keras dense sequential model with specified input and output dimensions, specified number of hidden layers
 ## ~~~ and widths of each hidden layer, and specified activation functions.
 ### ~~~
-
-def keras_seed(integer):    
-    tf.random.set_seed(integer)
-    np.random.seed(integer)
-    tf.keras.utils.set_random_seed(integer)
-
 
 def make_keras_network( num_inputs, num_outputs, hidden_layers=[24,18,8,8,4], activations=None, kernel_initializer='he_normal') :
     ### ~~~
@@ -106,10 +110,10 @@ def lazy_keras_training(
     ### ~~~
     ## ~~~ Coercion of variable types
     ### ~~~
-    x_train = tf.convert_to_tensor(x_train) if isinstance(x_train,np.ndarray) else x_train
-    y_train = tf.convert_to_tensor(y_train) if isinstance(y_train,np.ndarray) else y_train
-    x_val = tf.convert_to_tensor(x_val) if isinstance(x_val,np.ndarray) else x_val
-    y_val = tf.convert_to_tensor(y_val) if isinstance(y_val,np.ndarray) else y_val
+    x_train = tf.convert_to_tensor(x_train) if type(x_train).__module__=="numpy"    else x_train
+    y_train = tf.convert_to_tensor(y_train) if type(y_train).__module__=="numpy"    else y_train
+    x_val = tf.convert_to_tensor(x_val)     if type(x_val).__module__=="numpy"      else x_val
+    y_val = tf.convert_to_tensor(y_val)     if type(y_val).__module__=="numpy"      else y_val
     ### ~~~
     ## ~~~ Call (and return the result of calling) the fit method
     ### ~~~
