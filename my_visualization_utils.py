@@ -47,7 +47,7 @@ def points_with_curves(
     if points_label is None:
         points_label = "Training Data"
     if marker_size is None:
-        marker_size = 4
+        marker_size = 4 if len(x)<400 else max( 247/60-7/24000*len(x), 1.2)
     if marker_color is None:
         marker_color = "green"
     if point_mark is None:
@@ -146,12 +146,20 @@ def side_by_side_prediction_plots(
             pred_b,
             title_a = "One Model",
             title_b = "Another Model",
+            other_x = None,
+            other_y = None,
             figsize = (12,6) if this_is_running_in_colab else None,
             **kwargs
        ):
+    #
+    # ~~~ Use the same points for both images unless specified otherwise
+    other_x = x if other_x is None else other_x
+    other_y = y if other_y is None else other_y
+    #
+    # ~~~ Create a window with space for two images
     fig,(ax_a,ax_b) = plt.subplots( 1, 2, figsize=figsize )
     #
-    # ~~~ `None` reverts to default behavior of `points_with_curves, otherwise use what Fouract did in https://github.com/foucart/Mathematical_Pictures_at_a_Data_Science_Exhibition/blob/master/Python/Chapter01.ipynb
+    # ~~~ Create the left image
     fig,ax_a = points_with_curves(
             x = x, 
             y = y, 
@@ -162,15 +170,19 @@ def side_by_side_prediction_plots(
             ax = ax_a,
             **kwargs
         )
+    #
+    # ~~~ Create the left image
     fig,ax_b = points_with_curves(
-            x = x, 
-            y = y, 
-            curves = (pred_b,true_fun), 
-            title = title_b, 
-            show = False, 
-            fig = fig, 
+            x = other_x,
+            y = other_y,
+            curves = (pred_b,true_fun),
+            title = title_b,
+            show = False,
+            fig = fig,
             ax = ax_b,
             **kwargs
         )
+    #
+    # ~~~ Print the combined window containing both images
     fig.tight_layout()
     plt.show()
