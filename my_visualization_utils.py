@@ -111,12 +111,15 @@ def points_with_curves(
         ax.plot( grid, curves[i](grid), curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i] )
     #
     #~~~ Further aesthetic configurations
-    ax.set_title(title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     ax.grid()
+    if title is not None:
+        ax.set_title(title)
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
     #
     #~~~ The following lines replace `plt.legend()` to avoid duplicate labels; source https://stackoverflow.com/a/13589144
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -144,11 +147,12 @@ def side_by_side_prediction_plots(
             true_fun,
             pred_a,
             pred_b,
-            title_a = "One Model",
-            title_b = "Another Model",
+            axatitle = "One Model",
+            axbtitle = "Another Model",
             other_x = None,
             other_y = None,
             figsize = (12,6) if this_is_running_in_colab else None,
+            figtitle = None,
             **kwargs
        ):
     #
@@ -164,7 +168,7 @@ def side_by_side_prediction_plots(
             x = x, 
             y = y, 
             curves = (pred_a,true_fun), 
-            title = title_a, 
+            title = axatitle, 
             show = False, 
             fig = fig, 
             ax = ax_a,
@@ -176,7 +180,7 @@ def side_by_side_prediction_plots(
             x = other_x,
             y = other_y,
             curves = (pred_b,true_fun),
-            title = title_b,
+            title = axbtitle,
             show = False,
             fig = fig,
             ax = ax_b,
@@ -184,5 +188,7 @@ def side_by_side_prediction_plots(
         )
     #
     # ~~~ Print the combined window containing both images
+    if figtitle is not None:
+        plt.suptitle(figtitle)
     fig.tight_layout()
     plt.show()
