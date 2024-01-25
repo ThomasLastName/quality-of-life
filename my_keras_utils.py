@@ -50,7 +50,7 @@ def make_keras_network( num_inputs, num_outputs, hidden_layers=[24,18,8,8,4], ac
     model.add(tf.keras.layers.Input(shape=(num_inputs,)))
     #
     #~~~ add hidden layers with specified activations
-    for i, (layer_size, activation) in enumerate(zip(hidden_layers, activations)):
+    for (layer_size, activation) in zip(hidden_layers,activations):
         model.add(tf.keras.layers.Dense(layer_size, activation=activation, kernel_initializer=kernel_initializer))
     #
     #~~~ add output layer
