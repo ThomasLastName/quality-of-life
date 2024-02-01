@@ -21,7 +21,21 @@ def generate_random_1d_data( ground_truth, n_train, n_test=1001, a=-1, b=1, nois
     y_test = ground_truth(x_test) 
     return x_train, y_train, x_test, y_test
 
+#
+# ~~~ Check whether a matrix has a column of all 1's or not
+def test_augmented(X):
+    return np.any(np.all(np.isclose(X,1),axis=0))
 
+#
+# ~~~ Attach a column of all 1's to a matrix, if there isn't a column of all 1's alreay
+def augment(X):
+    return X if test_augmented(X) else np.hstack((
+            X,
+            np.ones( shape=(X.shape[0],1), dtype=X.dtype )  # assumes that X has dtype and shape attributes
+        ))
+
+#
+# ~~~ Entry-wise minimum between vectors
 def my_min( vec1, vec2 ):
     assert isinstance(vec1,np.ndarray) or isinstance(vec2,np.ndarray)
     if isinstance( vec1, (int,float) ):
@@ -30,7 +44,8 @@ def my_min( vec1, vec2 ):
         vec2 = vec2*np.ones_like(vec1)
     return np.min( np.vstack((vec1,vec2)).T , axis=-1 )
     
-
+#
+# ~~~ Entry-wise maximum between vectors
 def my_max( vec1, vec2 ):
     assert isinstance(vec1,np.ndarray) or isinstance(vec2,np.ndarray)
     if isinstance( vec1, (int,float) ):

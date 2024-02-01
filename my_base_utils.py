@@ -5,9 +5,71 @@ import inspect
 import warnings
 import traceback
 import sys
+import os
 from contextlib import contextmanager
 warnings.simplefilter("always",UserWarning)
 from quality_of_life.ansi import bcolors
+
+
+
+def get_file_extension(file_path):
+    return os.path.splitext(file_path)[1]
+
+
+def get_file_name(file_path):
+    return os.path.basename(file_path)
+
+
+def modify_path(file_path_or_name,force=False):
+    #
+    # ~~~ If the path doesn't exist, then no modification is needed; do nothing
+    if (not os.path.exists(file_path_or_name)) and (not force):
+        return file_path_or_name
+    #
+    # ~~~ Remove any the doodads surring the file name, thus leaving the only thing we wish to modify
+    extension = get_file_extension(file_path_or_name)
+    file_name = get_file_name(file_path_or_name)
+    name_only = file_name.strip(extension)
+    #
+    # ~~~ Check if the name ends with " (anything)"
+    start = name_only.rfind("(")
+    end = name_only.rfind(")")
+    correct_format = name_only.endswith(")") and (not start==-1) #and name_only[start-1]==" "   # ~~~ note: .rfind( "(" ) returns -1 if "(" is not found
+    #
+    # ~~~ If the file name is like "text (2)", turn that into "text (3)"
+    if correct_format:
+        if correct_format:
+            thing_inside_the_parentheses = name_only[start + 1:end]
+            try:
+                num = int(thing_inside_the_parentheses)
+                new_num = num + 1
+                modified_name = name_only[:start + 1] + str(new_num) + name_only[end:]
+            except ValueError:
+                #
+                # ~~~ If conversion to int fails, treat it as if the name didn't end with a valid " (n)"
+                correct_format = False
+    #
+    # ~~~ If the file name didn't end with " (n)" for some n, then just append " (1)" to the file name
+    if not correct_format:
+        modified_name = name_only + " (1)"
+    #
+    # ~~~ Reattach any doodads we removed
+    return file_path_or_name.strip(file_name) + modified_name + extension
+
+
+
+def process_for_saving(file_path_or_name):
+    while os.path.exists(file_path_or_name):
+        file_path_or_name = modify_path(file_path_or_name)
+    return file_path_or_name
+
+"""
+# Example usage:
+name = "/path/to/file.txt"
+modified_path = modify_path(name,force=True)
+print(f"Original path: {name}")
+print(f"Modified path: {modified_path}")
+"""
 
 
 def my_warn(message,*args,**kwargs):
@@ -17,20 +79,26 @@ def my_warn(message,*args,**kwargs):
         file_name = caller_frame.f_code.co_filename
         line_number = caller_frame.f_lineno
         calling_function = caller_frame.f_code.co_name
-        print(bcolors.WARNING)  # also introduces a line break, which can be avoided using the `write = ... ; writer.write(...)` syntax found in other functions in this module
-        warnings.warn( "line " +
-                      bcolors.HEADER + f"{line_number}" +
-                      bcolors.WARNING + " of " +
-                      bcolors.HEADER + f"{file_name}" +
-                      bcolors.WARNING + " in " + 
-                      bcolors.HEADER + f"{calling_function}:" +
-                      bcolors.WARNING + f"{message}" + "\n" + bcolors.ENDC,
-            UserWarning,
-            stacklevel=3,
-            *args,
-            **kwargs
-        )
+        old_color = revert_console(note_color=True)
+        with support_for_progress_bars():
+            print(bcolors.WARNING)  # also introduces a line break, which can be avoided using the `write = ... ; writer.write(...)` syntax found in other functions in this module
+            warnings.warn( "line " +
+                        bcolors.HEADER + f"{line_number}" +
+                        bcolors.WARNING + " of " +
+                        bcolors.HEADER + f"{file_name}" +
+                        bcolors.WARNING + " in " + 
+                        bcolors.HEADER + f"{calling_function}: " +
+                        bcolors.WARNING + f"{message}" + "\n" + bcolors.ENDC,
+                    UserWarning,
+                    stacklevel=3,
+                    *args,
+                    **kwargs
+                )
     finally:
+        if old_color is None:
+            revert_console()    # ~~~ out of the box settings
+        else:
+            colored_console_output( main_color=old_color, warn=False )
         del frame
 
 #
@@ -108,20 +176,26 @@ def monochrome(color):
 # ~~~ Integrate with packages like tqdm and alive_progress
 @contextmanager
 def support_for_progress_bars( warn=False, default_color=bcolors.OKGREEN ):
-    # Before any of the code
+    #
+    # ~~~ Before any of the code
     try:
-        #~~~ Note the current setting and choose what to switch to
+        #
+        # ~~~ Note the current setting and choose what to switch to
         old_color = revert_console(note_color=True)
         new_color = old_color if (old_color is not None) else default_color
-        #~~~ Cancel whatever setting may have been active and, instead, switch to monochrome
+        #
+        # ~~~ Cancel whatever setting may have been active and, instead, switch to monochrome
         monochrome(new_color)
-        #~~~ Do the actual code
+        #
+        # ~~~ Do the actual code
         yield
-    #~~~ After all the code
+    #
+    # ~~~ After all the code
     finally:
-        #~~~~ Reinstate the cancelled behavior
+        #
+        # ~~~ Reinstate the cancelled behavior
         if old_color is None:
-            revert_console()    # out of the box settings
+            revert_console()    # ~~~ out of the box settings
         else:
             colored_console_output( main_color=old_color, warn=warn )
 

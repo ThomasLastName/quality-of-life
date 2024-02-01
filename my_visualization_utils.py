@@ -2,17 +2,109 @@
 # ~~~ Tom Winckelman wrote this; maintained at: https://github.com/ThomasLastName/quality_of_life
 
 import sys
-from matplotlib import pyplot as plt
 import numpy as np
-from quality_of_life.my_base_utils import my_warn
+
+from matplotlib import pyplot as plt
+from plotly import graph_objects as go
+from PIL import Image
+from io import BytesIO
+import os
+from contextlib import contextmanager
+
+from quality_of_life.my_base_utils import my_warn, process_for_saving, get_file_extension
+
 this_is_running_in_colab = ('google.colab' in sys.modules)
+
+class GifMaker:
+    def __init__( self, path_or_name=os.path.join(os.getcwd(),"my_gif"), fps=30, ram_only=True ):
+        self.frames = []
+        self.ram_only = ram_only
+        extension = get_file_extension(path_or_name)
+        self.path_or_name = path_or_name.strip(extension)
+        self.fps=fps
+        if not ram_only:
+            raise NotImplementedError("Automatic management of file names still needs to be debugged")
+    def capture(self):
+        buffer = BytesIO() if self.ram_only else None
+        filename = process_for_saving(self.path_or_name)+".png" if not self.ram_only else None
+        plt.savefig(buffer if self.ram_only else filename)
+        self.frames.append(buffer.getvalue() if self.ram_only else filename)
+    def stable_capture(self):
+        buffer = BytesIO() if self.ram_only else None
+        filename = process_for_saving(self.path_or_name)+".png" if not self.ram_only else None
+        plt.savefig(buffer if self.ram_only else filename)
+        plt.clf()
+        self.frames.append(buffer.getvalue() if self.ram_only else filename)
+    def develop( self, destination, total_duration=None, fps=None, verbose=True ):
+        #
+        # ~~~ Process individual frames
+        if self.ram_only:
+            images = [ Image.open(BytesIO(buffer)) for buffer in self.frames ]
+        else:
+            images = [ Image.open(file) for file in self.frames ]
+            # Clean up: Delete the individual PNG files
+            for file in self.frames:
+                os.remove(file)
+        #
+        # ~~~ Process destination path
+        destination = self.path_or_name if destination is None else destination
+        destination = os.path.join( os.getcwd(), destination ) if os.path.dirname(destination)=="" else destination
+        destination = process_for_saving(destination.strip(".gif")+".gif")
+        #
+        # ~~~ Process frame rate
+        fps = self.fps if fps is None else fps
+        if total_duration is None:
+            total_duration = len(self.frames)/fps
+        else:
+            fps = len(self.frames)/total_duration
+        #
+        # ~~~ Save the thing
+        if verbose:
+            print(f"Saving gif of length {total_duration:.3} sec. at {destination}")
+        images[0].save( destination, save_all=True, append_images=images[1:], duration=int(1000/fps), loop=0 )
+
+@contextmanager
+def GifContext(path_or_name,ram_only):
+    gif = GifMaker(path_or_name,ram_only)
+    yield gif
+    gif.develop()
+
+"""
+# Example usage
+from matplotlib import pyplot as plt
+from quality_of_life.my_visualization_utils import GifMaker
+
+gif = GifMaker()
+for iteration in range(1, 101):
+    # Your plotting logic
+    _ = plt.plot(range(iteration), [i**2 for i in range(iteration)])
+    _ = plt.xlabel('X-axis')
+    _ = plt.ylabel('Y-axis')
+    _ = plt.title(f'Iteration {iteration}')
+    # Save the Matplotlib plot to an in-memory buffer or a file
+    gif.capture()
+
+gif.develop("test")
+"""
+
+#
+# ~~~ Plot a line from slope and intercept
+def abline( slope, intercept, *args, **kwargs ):   # ~~~ based off https://stackoverflow.com/a/43811762/11595884
+    axes = plt.gca()
+    original_xlim = axes.get_xlim()
+    original_ylim = axes.get_ylim()
+    x_vals = np.array(buffer(original_xlim,multiplier=1))
+    y_vals = intercept + slope*x_vals
+    plt.plot( x_vals, y_vals, *args, **kwargs )
+    axes.set_xlim(original_xlim)
+    axes.set_ylim(original_ylim)
 
 #
 #~~~ Compute [min-c,max+c] where c>0 is a buffer
-def buffer(vector):
+def buffer(vector,multiplier=0.05):
     a = min(vector)
     b = max(vector)
-    extra = (b-a)*0.05
+    extra = (b-a)*multiplier
     return [a-extra, b+extra]
 
 #
@@ -192,3 +284,34 @@ def side_by_side_prediction_plots(
         plt.suptitle(figtitle)
     fig.tight_layout()
     plt.show()
+
+#
+# ~~~ Create a surface plot of f, assuming Z is the len(x)-by-len(y) matrix with Z[i,j]=f(x[i],y[j])
+def matrix_surf(x,y,Z):
+    go.Figure(go.Surface( x=x, y=y, z=Z )).show()
+
+# #
+# # ~~~ Return the len(x)-by-len(y) matrix Z matrix defined by Z[i,j] = f(x[i],y[j])
+# def apply_on_cartesian_product(f,x,y):
+#     X, Y = np.meshgrid(x,y)
+#     cartesian_product = np.column_stack((X.flatten(), Y.flatten())) # ~~~ the result is basically just a rearranged version of list(itertools.product(x,y))
+#     return f(cartesian_product).reshape(X.shape).T
+
+# #
+# # ~~~ Wrap it in a neat package
+# def func_surf(x,y,f):
+#     matrix_surf( x, y, apply_on_cartesian_product(f,x,y) )
+
+# #
+# # ~~~ Wrap it in a neat package
+# def basic_surf( f, xlim, ylim, res=501 ):
+#     x = np.linspace( xlim[0], xlim[-1], res )
+#     y = np.linspace( ylim[0], ylim[-1], res )
+#     func_surf(x,y,f)
+
+
+
+# x = np.linspace(0,5,1001)
+# y = np.linspace(1,2,301)
+# f = lambda matrix: np.sin(np.sum(matrix**2,axis=1))
+# func_surf(x,y,f)
