@@ -63,11 +63,12 @@ class GifMaker:
             print(f"Saving gif of length {total_duration:.3} sec. at {destination}")
         images[0].save( destination, save_all=True, append_images=images[1:], duration=int(1000/fps), loop=0 )
 
-@contextmanager
-def GifContext(path_or_name,ram_only):
-    gif = GifMaker(path_or_name,ram_only)
-    yield gif
-    gif.develop()
+
+# @contextmanager
+# def GifContext(path_or_name,ram_only):
+#     gif = GifMaker(path_or_name,ram_only)
+#     yield gif
+#     gif.develop()
 
 """
 # Example usage
@@ -83,7 +84,8 @@ for iteration in range(1, 101):
     _ = plt.title(f'Iteration {iteration}')
     # Save the Matplotlib plot to an in-memory buffer or a file
     gif.capture()
-
+    gif.clf()
+    
 gif.develop("test")
 """
 
@@ -127,6 +129,7 @@ def points_with_curves(
         ylabel = None,
         xlim = None,
         ylim = None,
+        crop_ylim = True,
         show = True,
         fig = "new",
         ax = "new",
@@ -150,14 +153,10 @@ def points_with_curves(
         xlim = buffer(x)
     if grid is None:
         grid = np.linspace( min(xlim), max(xlim), 1001 )
-    if ylim is None:
+    if ylim is None and crop_ylim:
         lo,hi = 0,0
-        for curve in curves:
-            test = curve(grid)
-            lo = min(y)
-            hi = max(y)
         extra = (hi-lo)*0.2
-        ylim = [ lo-extra, hi+extra ]
+        ylim = buffer(y,multiplier=0.2)
     curve_thicknesses = [min(0.5,3/n_curves)]*n_curves if curve_thicknesses is None else curve_thicknesses[:n_curves]
     #
     #~~~ Facilitate my most common use case: the plot to be rendered is meant to visualize a model's fit

@@ -11,6 +11,25 @@ warnings.simplefilter("always",UserWarning)
 from quality_of_life.ansi import bcolors
 
 
+def clear_last_line(prompt):
+    # Move cursor to the beginning of the line
+    sys.stdout.write('\r')
+    # Clear the line by printing spaces
+    sys.stdout.write(' ' * (len(prompt)))
+    # Move cursor back to the beginning of the line
+    sys.stdout.write('\r')
+    sys.stdout.flush()
+
+
+def get_input_with_clear(prompt="Enter something: "):
+    input_text = input(prompt)
+    clear_last_line(prompt)
+    return input_text
+
+def load_txt(filepath):
+    with open(filepath, 'r', encoding='utf-8') as infile:
+        return infile.read()
+
 
 def get_file_extension(file_path):
     return os.path.splitext(file_path)[1]
