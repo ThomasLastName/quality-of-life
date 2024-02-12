@@ -24,11 +24,13 @@ class GifMaker:
         self.fps=fps
         if not ram_only:
             raise NotImplementedError("Automatic management of file names still needs to be debugged")
-    def capture(self):
+    def capture(self,multiple_exposure=False):
         buffer = BytesIO() if self.ram_only else None
         filename = process_for_saving(self.path_or_name)+".png" if not self.ram_only else None
         plt.savefig(buffer if self.ram_only else filename)
         self.frames.append(buffer.getvalue() if self.ram_only else filename)
+        if not multiple_exposure:
+            plt.close()
     def stable_capture(self):
         buffer = BytesIO() if self.ram_only else None
         filename = process_for_saving(self.path_or_name)+".png" if not self.ram_only else None
