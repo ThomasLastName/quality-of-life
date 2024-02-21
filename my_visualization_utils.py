@@ -9,7 +9,6 @@ from plotly import graph_objects as go
 from PIL import Image
 from io import BytesIO
 import os
-from contextlib import contextmanager
 
 from quality_of_life.my_base_utils import my_warn, process_for_saving, get_file_extension
 
@@ -154,7 +153,13 @@ def points_with_curves(
     if xlim is None:
         xlim = buffer(x)
     if grid is None:
-        grid = np.linspace( min(xlim), max(xlim), 1001 )
+        if "torch" in sys.modules.keys():
+            module = sys.modules["torch"]
+        elif "tensorflow" in sys.modules.keys():
+            module = sys.modules["tensorflow"]
+        else:
+            module = np
+        grid = module.linspace( min(xlim), max(xlim), 1001 )
     if ylim is None and crop_ylim:
         lo,hi = 0,0
         extra = (hi-lo)*0.2

@@ -194,14 +194,14 @@ def monochrome(color):
 #
 # ~~~ Integrate with packages like tqdm and alive_progress
 @contextmanager
-def support_for_progress_bars( warn=False, default_color=bcolors.OKGREEN ):
+def support_for_progress_bars( warn=False, color=bcolors.OKGREEN ):
     #
     # ~~~ Before any of the code
     try:
         #
         # ~~~ Note the current setting and choose what to switch to
         old_color = revert_console(note_color=True)
-        new_color = old_color if (old_color is not None) else default_color
+        new_color = old_color if (old_color is not None) else color
         #
         # ~~~ Cancel whatever setting may have been active and, instead, switch to monochrome
         monochrome(new_color)
