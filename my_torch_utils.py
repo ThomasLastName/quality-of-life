@@ -1,6 +1,6 @@
 
 import sys
-from types import NoneType
+import math
 import torch
 from alive_progress import alive_bar
 from quality_of_life.my_base_utils import support_for_progress_bars, my_warn
@@ -69,13 +69,13 @@ def standard_train_step( model, data, loss_fn, optimizer, device ):
     loss = loss_fn(model(X),y)
     #
     # ~~~ Backpropagation
-    loss.backward()             # ~~~ compute the gradient of loss
-    optimizer.step()      # ~~~ apply the gradient to the model parameters
-    optimizer.zero_grad() # ~~~ reset the gradient to zero so that we "start fresh" next time standard_train_step is called
+    loss.backward()         # ~~~ compute the gradient of loss
+    optimizer.step()        # ~~~ apply the gradient to the model parameters
+    optimizer.zero_grad()   # ~~~ reset the gradient to zero so that we "start fresh" next time standard_train_step is called
     return loss.item()
 
 # todo define a simpler version of fit without all the metrics and ask chat gpt how to incorporate model.evel() and torch.no_grad()
-def fit( model, training_batches, loss_fn, optimizer, train_step=standard_train_step, test_data=None, epochs=20, verbose=2, epochal_metrics=None, training_metrics=None, test_metrics=None ):
+def fit( model, training_batches, loss_fn, optimizer, train_step=standard_train_step, test_data=None, epochs=20, verbose=2, epochal_metrics=None, training_metrics=None, test_metrics=None, device=("cuda" if torch.cuda.is_available() else "cpu") ):
     #
     # ~~~ Organize keys
     assert isinstance(training_metrics,dict) or training_metrics is None
@@ -100,7 +100,7 @@ def fit( model, training_batches, loss_fn, optimizer, train_step=standard_train_
             # ~~~ Do the training logic, and record any metrics, but print nothing
             for _ in range(epochs):
                 for data in training_batches:
-                    history["loss"].append(train_step( model, data, loss_fn, optimizer, next(model.parameters().device)) )
+                    history["loss"].append(train_step( model, data, loss_fn, optimizer, device ))
                     for key in train_keys:
                         history[key].append(training_metrics[key](model,data))
                     for key in test_keys:
@@ -232,4 +232,12 @@ class Model(torch.nn.Sequential):
                         msg+= f" | {key}: {val:.3} "
                         history[key].append(val)
                     bar.text(msg.strip(" "))
-                
+
+
+#
+# ~~~ A normal Johnson–Lindenstrauss matrix, which projects to a lower dimension while approximately preserving pairwise distances
+def JL_layer( in_features, out_features ):
+    linear_embedding = torch.nn.Linear( in_features, out_features, bias=False )
+    linear_embedding.weight.requires_grad = False
+    torch.nn.init.normal_( linear_embedding.weight, mean=0, std=1/math.sqrt(out_features) )
+    return linear_embedding
