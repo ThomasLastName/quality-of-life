@@ -34,23 +34,23 @@ def augment(X):
             np.ones( shape=(X.shape[0],1), dtype=X.dtype )  # assumes that X has dtype and shape attributes
         ))
 
-#
-# ~~~ Entry-wise minimum between vectors
-def my_min( vec1, vec2 ):
-    assert isinstance(vec1,np.ndarray) or isinstance(vec2,np.ndarray)
-    if isinstance( vec1, (int,float) ):
-        vec1 = vec1*np.ones_like(vec2)
-    if isinstance( vec2, (int,float) ):
-        vec2 = vec2*np.ones_like(vec1)
-    return np.min( np.vstack((vec1,vec2)).T , axis=-1 )
+# #
+# # ~~~ Entry-wise minimum between vectors (UPDATE: apparently np.minimum(vec1,vec2) does the same)
+# def least( vec1, vec2 ):
+#     assert isinstance(vec1,np.ndarray) or isinstance(vec2,np.ndarray)
+#     if isinstance( vec1, (int,float) ):
+#         vec1 = vec1*np.ones_like(vec2)
+#     if isinstance( vec2, (int,float) ):
+#         vec2 = vec2*np.ones_like(vec1)
+#     return np.min( np.vstack((vec1,vec2)).T , axis=-1 )
     
-#
-# ~~~ Entry-wise maximum between vectors
-def my_max( vec1, vec2 ):
-    assert isinstance(vec1,np.ndarray) or isinstance(vec2,np.ndarray)
-    if isinstance( vec1, (int,float) ):
-        vec1 = vec1*np.ones_like(vec2)
-    if isinstance( vec2, (int,float) ):
-        vec2 = vec2*np.ones_like(vec1)
-    return np.max( np.vstack((vec1,vec2)).T , axis=-1 )
+# #
+# # ~~~ Entry-wise maximum between vectors (UPDATE: apparently np.maximum(vec1,vec2) does the same)
+# def greatest( vec1, vec2 ):
+#     assert isinstance(vec1,np.ndarray) or isinstance(vec2,np.ndarray)
+#     if isinstance( vec1, (int,float) ):
+#         vec1 = vec1*np.ones_like(vec2)
+#     if isinstance( vec2, (int,float) ):
+#         vec2 = vec2*np.ones_like(vec1)
+#     return np.max( np.vstack((vec1,vec2)).T , axis=-1 )
     
