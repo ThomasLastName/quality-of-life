@@ -46,9 +46,9 @@ def modify_path(file_path_or_name,force=False):
         return file_path_or_name
     #
     # ~~~ Remove any the doodads surring the file name, thus leaving the only thing we wish to modify
-    extension = get_file_extension(file_path_or_name)
-    file_name = get_file_name(file_path_or_name)
-    name_only = file_name.strip(extension)
+    original_extension = get_file_extension(file_path_or_name)
+    file_name_and_extnesion = get_file_name(file_path_or_name)
+    name_only = file_name_and_extnesion.replace(original_extension,"")
     #
     # ~~~ Check if the name ends with " (anything)"
     start = name_only.rfind("(")
@@ -73,7 +73,7 @@ def modify_path(file_path_or_name,force=False):
         modified_name = name_only + " (1)"
     #
     # ~~~ Reattach any doodads we removed
-    return file_path_or_name.strip(file_name) + modified_name + extension
+    return file_path_or_name.replace( file_name_and_extnesion, modified_name+original_extension )
 
 
 
