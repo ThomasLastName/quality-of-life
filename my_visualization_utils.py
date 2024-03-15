@@ -14,55 +14,105 @@ from quality_of_life.my_base_utils import my_warn, process_for_saving, get_file_
 
 this_is_running_in_colab = ('google.colab' in sys.modules)
 
+
+# from quality_of_life.my_visualization_utils import GifMaker
+# from matplotlib import pyplot as plt
+# import numpy as np
+# gif = GifMaker(ram_only=False)
+# x = np.linspace(0,1)
+# N = 150
+# for j in range(N):
+#     plt.plot(x,np.cos(2*np.pi*(x-j/N)))
+#     gif.capture()
+
+# gif.develop(destination="cosine wave")
+
+
+
 class GifMaker:
-    def __init__( self, path_or_name=os.path.join(os.getcwd(),"my_gif"), fps=30, ram_only=True ):
-        self.frames = []
-        self.ram_only = ram_only
-        extension = get_file_extension(path_or_name)
-        self.path_or_name = path_or_name.strip(extension)
-        self.fps=fps
+    #
+    # ~~~ Instantiate what is essentially just a list of images
+    def __init__( self, path_or_name="my_gif", ram_only=True ):
+        self.frames = []            # ~~~ the list of images
+        self.ram_only = ram_only    # ~~~ where to store the list of images
+        path_or_name = os.path.join( os.getcwd(), path_or_name ) if os.path.dirname(path_or_name)=="" else path_or_name
+        #
+        # ~~~ Save a master path to be used by default for this gif
+        self.master_path = process_for_saving(os.path.splitext(path_or_name)[0])   # ~~~ strip any file extension if present, and modify the file name if necessary to avoid save conflicts
+        #
+        # ~~~ If we don't want to store images only in RAM, then create a folder in which to store the pictures temporarily
         if not ram_only:
-            raise NotImplementedError("Automatic management of file names still needs to be debugged")
-    def capture(self,multiple_exposure=False):
-        buffer = BytesIO() if self.ram_only else None
-        filename = process_for_saving(self.path_or_name)+".png" if not self.ram_only else None
-        plt.savefig(buffer if self.ram_only else filename)
-        self.frames.append(buffer.getvalue() if self.ram_only else filename)
+            self.temp_dir = process_for_saving(self.master_path+" temp storage")
+            os.mkdir(self.temp_dir)
+    #
+    # ~~~ Method that, when called, saves a picture of whatever would be returned by plt.show() at that time
+    def capture( self, multiple_exposure=False, **kwargs ):
+        #
+        # ~~~ Save the figure either in RAM (if `ram_only==True`) or at a path called `filename`
+        temp = BytesIO() if self.ram_only else None
+        filename = None if self.ram_only else process_for_saving(os.path.join(self.temp_dir,"frame (1).png"))
+        plt.savefig( temp if self.ram_only else filename, **kwargs )
+        #
+        # ~~~ Add to our list of pictures (called `frames`), either the picture that's in RAM (if `ram_only==True`) or the path from which the picture can be loaded
+        self.frames.append(temp.getvalue() if self.ram_only else filename)
+        #
+        # ~~~ Delete the picture that we just saved (unless `multiple_exposure=True`)
         if not multiple_exposure:
             plt.close()
+    #
+    # ~~~ An older version of the capture method
     def stable_capture(self):
         buffer = BytesIO() if self.ram_only else None
-        filename = process_for_saving(self.path_or_name)+".png" if not self.ram_only else None
+        filename = process_for_saving(self.master_path)+".png" if not self.ram_only else None
         plt.savefig(buffer if self.ram_only else filename)
         plt.clf()
         self.frames.append(buffer.getvalue() if self.ram_only else filename)
-    def develop( self, destination, total_duration=None, fps=None, verbose=True ):
+    #
+    # ~~~ Method that "concatenates" the list of picture `frames` into a .gif
+    def develop( self, destination=None, total_duration=None, fps=30, clean_up=True, verbose=True, loop=0, **kwargs ):
         #
         # ~~~ Process individual frames
         if self.ram_only:
-            images = [ Image.open(BytesIO(buffer)) for buffer in self.frames ]
+            #
+            # ~~~ Convert raw bits back to the image they were encoded from
+            images = [ Image.open(BytesIO(temp)) for temp in self.frames ]
         else:
+            #
+            # ~~~ Load the image from the path that it was saved to
             images = [ Image.open(file) for file in self.frames ]
-            # Clean up: Delete the individual PNG files
-            for file in self.frames:
-                os.remove(file)
         #
         # ~~~ Process destination path
-        destination = self.path_or_name if destination is None else destination
-        destination = os.path.join( os.getcwd(), destination ) if os.path.dirname(destination)=="" else destination
-        destination = process_for_saving(destination.strip(".gif")+".gif")
+        destination = self.master_path if destination is None else destination                                     # ~~~ default to the path used for temp storage (which, itself, defaults to os.getcwd()+"my_gif")
+        destination = os.path.join( os.getcwd(), destination ) if os.path.dirname(destination)=="" else destination # ~~~ if the destination path is just a filename, consider it as a file within the os.getcwd()
+        destination = process_for_saving(destination.replace(".gif","")+".gif")                                     # ~~~ add `.gif` if not already preasent, turn "file_name.gif" into "file_name (1).gif", etc.
         #
-        # ~~~ Process frame rate
-        fps = self.fps if fps is None else fps
+        # ~~~ Infer a frame rate from the desired duration, if the latter is supplied
         if total_duration is None:
             total_duration = len(self.frames)/fps
         else:
+            if fps is not None:
+                my_warn("Both `total_duration` and `fps` were supplied. `fps` will be ignored.")
             fps = len(self.frames)/total_duration
         #
         # ~~~ Save the thing
         if verbose:
             print(f"Saving gif of length {total_duration:.3} sec. at {destination}")
-        images[0].save( destination, save_all=True, append_images=images[1:], duration=int(1000/fps), loop=0 )
+        images[0].save( destination, save_all=True, append_images=images[1:], duration=int(1000/fps), loop=loop, **kwargs )
+        #
+        # ~~~ Clean up the workspace if desired
+        if clean_up:
+            self.clean_up()
+    #
+    # ~~~ Delete the individually saved PNG files and their temp directory
+    def clean_up(self):
+        if self.ram_only:
+            del self.frames
+            self.frames = []
+        else:
+            for file in self.frames:
+                os.remove(file)
+            os.rmdir(self.temp_dir)
+            self.frames = []
 
 
 # @contextmanager
