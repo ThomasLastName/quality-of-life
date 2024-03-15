@@ -14,21 +14,6 @@ from quality_of_life.my_base_utils import my_warn, process_for_saving, get_file_
 
 this_is_running_in_colab = ('google.colab' in sys.modules)
 
-
-# from quality_of_life.my_visualization_utils import GifMaker
-# from matplotlib import pyplot as plt
-# import numpy as np
-# gif = GifMaker(ram_only=False)
-# x = np.linspace(0,1)
-# N = 150
-# for j in range(N):
-#     plt.plot(x,np.cos(2*np.pi*(x-j/N)))
-#     gif.capture()
-
-# gif.develop(destination="cosine wave")
-
-
-
 class GifMaker:
     #
     # ~~~ Instantiate what is essentially just a list of images
@@ -59,14 +44,6 @@ class GifMaker:
         # ~~~ Delete the picture that we just saved (unless `multiple_exposure=True`)
         if not multiple_exposure:
             plt.close()
-    #
-    # ~~~ An older version of the capture method
-    def stable_capture(self):
-        buffer = BytesIO() if self.ram_only else None
-        filename = process_for_saving(self.master_path)+".png" if not self.ram_only else None
-        plt.savefig(buffer if self.ram_only else filename)
-        plt.clf()
-        self.frames.append(buffer.getvalue() if self.ram_only else filename)
     #
     # ~~~ Method that "concatenates" the list of picture `frames` into a .gif
     def develop( self, destination=None, total_duration=None, fps=30, clean_up=True, verbose=True, loop=0, **kwargs ):
@@ -114,31 +91,17 @@ class GifMaker:
             os.rmdir(self.temp_dir)
             self.frames = []
 
+# from quality_of_life.my_visualization_utils import GifMaker
+# from matplotlib import pyplot as plt
+# import numpy as np
+# gif = GifMaker(ram_only=False)
+# x = np.linspace(0,1)
+# N = 150
+# for j in range(N):
+#     plt.plot(x,np.cos(2*np.pi*(x-j/N)))
+#     gif.capture()
 
-# @contextmanager
-# def GifContext(path_or_name,ram_only):
-#     gif = GifMaker(path_or_name,ram_only)
-#     yield gif
-#     gif.develop()
-
-"""
-# Example usage
-from matplotlib import pyplot as plt
-from quality_of_life.my_visualization_utils import GifMaker
-
-gif = GifMaker()
-for iteration in range(1, 101):
-    # Your plotting logic
-    _ = plt.plot(range(iteration), [i**2 for i in range(iteration)])
-    _ = plt.xlabel('X-axis')
-    _ = plt.ylabel('Y-axis')
-    _ = plt.title(f'Iteration {iteration}')
-    # Save the Matplotlib plot to an in-memory buffer or a file
-    gif.capture()
-    gif.clf()
-    
-gif.develop("test")
-"""
+# gif.develop(destination="cosine wave")
 
 #
 # ~~~ Plot a line from slope and intercept
@@ -165,7 +128,7 @@ def buffer(vector,multiplier=0.05):
 def points_with_curves(
         x,
         y,
-        curves,
+        curves,     # ~~~ (m1,m2,m3,...,ground_truth)
         points_label = None,
         curve_colors = None,
         marker_size = None,
@@ -174,6 +137,7 @@ def points_with_curves(
         curve_thicknesses = None,
         curve_labels = None,
         curve_marks = None,
+        curve_alphas = None,
         grid = None,
         title = None,
         xlabel = None,
@@ -182,6 +146,7 @@ def points_with_curves(
         ylim = None,
         crop_ylim = True,
         show = True,
+        legend = True,
         fig = "new",
         ax = "new",
         figsize = (6,6) if this_is_running_in_colab else None,
@@ -199,7 +164,9 @@ def points_with_curves(
     if point_mark is None:
         point_mark = 'o'
     if curve_colors is None:
-        curve_colors = ( "green", "blue", "orange", "midnightblue", "red", "hotpink" )
+        curve_colors = ( "hotpink", "orange", "midnightblue", "red", "blue",  "green" )
+    if curve_alphas is None:
+        curve_alphas = [1,]*n_curves
     if xlim is None:
         xlim = buffer(x)
     if grid is None:
@@ -219,8 +186,8 @@ def points_with_curves(
     #~~~ Facilitate my most common use case: the plot to be rendered is meant to visualize a model's fit
     if (curve_labels is None) and (curve_marks is None) and model_fit:
         curve_labels = ["Fitted Model","Ground Truth"] if n_curves==2 else [f"Fitted Model {i+1}" for i in range(n_curves-1)] + ["Ground Truth"]
-        curve_marks = ["-"]*(n_curves-1) + ["--"]       # ~~~ make the last curve dashed
-        curve_colors = curve_colors[:n_curves][::-1]    # ~~~ make the last curve green, which matches the default color of the dots
+        curve_marks = ["-"]*(n_curves-1) + ["--"]   # ~~~ make the last curve dashed
+        curve_colors = curve_colors[-n_curves:]     # ~~~ make the last curve green, which matches the default color of the dots
     elif model_fit:
         arg_vals, arg_names = [], []
         if curve_labels is not None:
@@ -256,7 +223,7 @@ def points_with_curves(
     fig,ax = plt.subplots(figsize=figsize) if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
     ax.plot( x, y, point_mark, markersize=marker_size, color=marker_color, label=points_label )
     for i in range(n_curves):
-        ax.plot( grid, curves[i](grid), curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i] )
+        ax.plot( grid, curves[i](grid), curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i], alpha=curve_alphas[i] )
     #
     #~~~ Further aesthetic configurations
     ax.set_xlim(xlim)
@@ -270,17 +237,18 @@ def points_with_curves(
         ax.set_ylabel(ylabel)
     #
     #~~~ The following lines replace `plt.legend()` to avoid duplicate labels; source https://stackoverflow.com/a/13589144
-    handles, labels = plt.gca().get_legend_handles_labels()
-    unique_labels = list(set(labels))  # Get unique labels
-    by_label = {}   # Create a dictionary to store handles and line styles for each unique label
-    for label in unique_labels:
-        indices = [i for i, x in enumerate(labels) if x == label]  # Find indices for each label
-        handle = handles[indices[0]]  # Get the handle for the first occurrence of the label
-        line_style = handle.get_linestyle()  # Get the line style
-        by_label[label] = (handle, line_style)  # Store handle and line style
-    legend_handles = [by_label[label][0] for label in by_label]
-    legend_labels = [f"{label}" for label in by_label]  # Include line style in label
-    plt.legend(legend_handles,legend_labels)
+    if legend:
+        handles, labels = plt.gca().get_legend_handles_labels()
+        unique_labels = list(set(labels))  # Get unique labels
+        by_label = {}   # Create a dictionary to store handles and line styles for each unique label
+        for label in unique_labels:
+            indices = [i for i, x in enumerate(labels) if x == label]  # Find indices for each label
+            handle = handles[indices[0]]  # Get the handle for the first occurrence of the label
+            line_style = handle.get_linestyle()  # Get the line style
+            by_label[label] = (handle, line_style)  # Store handle and line style
+        legend_handles = [by_label[label][0] for label in by_label]
+        legend_labels = [f"{label}" for label in by_label]  # Include line style in label
+        plt.legend(legend_handles,legend_labels)
     if show:
         fig.tight_layout()
         plt.show()
@@ -343,27 +311,46 @@ def side_by_side_prediction_plots(
 
 #
 # ~~~ Create a surface plot of f, assuming Z is the len(x)-by-len(y) matrix with Z[i,j]=f(x[i],y[j])
-def matrix_surf(x,y,Z):
-    go.Figure(go.Surface( x=x, y=y, z=Z )).show()
+def matrix_surf( x, y, Z, verbose=True, **kwargs ):
+    fig = go.Figure(go.Surface( x=x, y=y, z=Z ))
+    if len(kwargs)>0:
+        fig.update_traces(**kwargs) # ~~~ acceptable kwargs can be found at https://plotly.com/python/reference/layout/
+    fig.show()
+    if verbose:
+        print("Image opened in browser.")
 
-# #
-# # ~~~ Return the len(x)-by-len(y) matrix Z matrix defined by Z[i,j] = f(x[i],y[j])
-# def apply_on_cartesian_product(f,x,y):
-#     X, Y = np.meshgrid(x,y)
-#     cartesian_product = np.column_stack((X.flatten(), Y.flatten())) # ~~~ the result is basically just a rearranged version of list(itertools.product(x,y))
-#     return f(cartesian_product).reshape(X.shape).T
+#
+# ~~~ Return the len(x)-by-len(y) matrix Z matrix with Z[i,j] = f([x[i],y[j]])
+def apply_on_cartesian_product(f,x,y):
+    X,Y = np.meshgrid(x,y)
+    cartesian_product = np.column_stack((X.flatten(), Y.flatten())) # ~~~ the result is basically just a rearranged version of list(itertools.product(x,y))
+    return f(cartesian_product).reshape(X.shape)
 
-# #
-# # ~~~ Wrap it in a neat package
-# def func_surf(x,y,f):
-#     matrix_surf( x, y, apply_on_cartesian_product(f,x,y) )
+#
+# ~~~ Wrap it in a neat package
+def func_surf(x,y,f,plotly=True):
+    if plotly:
+        matrix_surf( x, y, apply_on_cartesian_product(f,x,y) )
+    else:
+        X,Y = np.meshgrid(x,y)
+        Z = apply_on_cartesian_product(f,x,y)
+        # Plot the surface
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(X, Y, Z, cmap='viridis')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('f(matrix)')
+        ax.set_title('Surface plot of f(matrix)')
+        plt.show()
 
-# #
-# # ~~~ Wrap it in a neat package
-# def basic_surf( f, xlim, ylim, res=501 ):
-#     x = np.linspace( xlim[0], xlim[-1], res )
-#     y = np.linspace( ylim[0], ylim[-1], res )
-#     func_surf(x,y,f)
+#
+# ~~~ Wrap it in a neat package
+def basic_surf( f, xlim, ylim, res=1001 ):
+    x = np.linspace( xlim[0], xlim[-1], res )
+    y = np.linspace( ylim[0], ylim[-1], res )
+    func_surf(x,y,f)
+
 
 
 
@@ -371,3 +358,4 @@ def matrix_surf(x,y,Z):
 # y = np.linspace(1,2,301)
 # f = lambda matrix: np.sin(np.sum(matrix**2,axis=1))
 # func_surf(x,y,f)
+
