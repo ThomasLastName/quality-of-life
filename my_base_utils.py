@@ -6,10 +6,40 @@ import warnings
 import traceback
 import sys
 import os
+import json
 from contextlib import contextmanager
 warnings.simplefilter("always",UserWarning)
 from quality_of_life.ansi import bcolors
 
+#
+# ~~~ Save a dictionary as a .json; from https://stackoverflow.com/a/7100202/11595884
+def dict_to_json( dict, path_including_file_extension, override=False ):
+    not_empty = os.path.exists(path_including_file_extension)
+    #
+    # ~~~ If that path already exists and the user did not say "over-ride" it, then raise an error
+    if not_empty and not override:
+        raise ValueError("The specified path already exists. Operation halted. Specify override=True to override this halting.")
+    #
+    # ~~~ If the file path is either available, or the user gave permission to over-ride it, then proceed to write there
+    with open(path_including_file_extension,'w') as fp:
+        json.dump(dict,fp)
+    if override:
+        my_warn(f"The path {path_including_file_extension} was not empty. It has been overwritten.")
+
+#
+# ~~~ Load a .json as a dictionary; from https://stackoverflow.com/a/7100202/11595884
+def json_to_dict(path_including_file_extension):
+    with open(path_including_file_extension,'r') as fp:
+        dict = json.load(fp)
+    return dict
+
+#
+# ~~~ Return the truth value of the statement that `dict` is identical to `other_dict`
+def dicts_are_identical( dict, other_dict ):
+    bool = (dict.keys()==other_dict.keys())
+    for key in dict:
+        bool = min( bool, dict[key]==other_dict[key] )
+    bool
 
 def clear_last_line(prompt):
     # Move cursor to the beginning of the line
