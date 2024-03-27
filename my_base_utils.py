@@ -39,7 +39,7 @@ def dicts_are_identical( dict, other_dict ):
     bool = (dict.keys()==other_dict.keys())
     for key in dict:
         bool = min( bool, dict[key]==other_dict[key] )
-    bool
+    return bool
 
 def clear_last_line(prompt):
     # Move cursor to the beginning of the line
