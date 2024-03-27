@@ -45,6 +45,16 @@ class GifMaker:
         if not multiple_exposure:
             plt.close()
     #
+    # ~~~ Delete the individually saved PNG files and their temp directory
+    def clean_up(self):
+        if not self.ram_only:
+            for file in self.frames:
+                if os.path.exists(file):
+                    os.remove(file)
+            os.rmdir(self.temp_dir)
+        del self.frames
+        self.frames = []
+    #
     # ~~~ Method that "concatenates" the list of picture `frames` into a .gif
     def develop( self, destination=None, total_duration=None, fps=30, clean_up=True, verbose=True, loop=0, **kwargs ):
         #
@@ -79,17 +89,7 @@ class GifMaker:
         # ~~~ Clean up the workspace if desired
         if clean_up:
             self.clean_up()
-    #
-    # ~~~ Delete the individually saved PNG files and their temp directory
-    def clean_up(self):
-        if self.ram_only:
-            del self.frames
-            self.frames = []
-        else:
-            for file in self.frames:
-                os.remove(file)
-            os.rmdir(self.temp_dir)
-            self.frames = []
+
 
 # from quality_of_life.my_visualization_utils import GifMaker
 # from matplotlib import pyplot as plt
@@ -223,7 +223,16 @@ def points_with_curves(
     fig,ax = plt.subplots(figsize=figsize) if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
     ax.plot( x, y, point_mark, markersize=marker_size, color=marker_color, label=points_label )
     for i in range(n_curves):
-        ax.plot( grid, curves[i](grid), curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i], alpha=curve_alphas[i] )
+        try:    # ~~~ try to just call curves[i] on grid
+            curve_on_grid = curves[i](grid)
+        except:
+            try:    # ~~~ except, if that doesn't work, then assume we're in pytorch, 
+                with sys.modules["torch"].no_grad():
+                    assumed_device = "cuda" if sys.modules["torch"].cuda.is_available() else "cpu"  # ~~~ assume that the curve is on "the best device available"
+                    curve_on_grid = curves[i](grid.to(assumed_device)).cpu()
+            except:
+                raise ValueError("Unable to evaluate `curve(grid)`; please specify `grid` manually in `points_with_curves` and/or verify the definitions of the arguments `grid` and `curves` in `points_with_curves`")
+        ax.plot( grid, curve_on_grid, curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i], alpha=curve_alphas[i] )
     #
     #~~~ Further aesthetic configurations
     ax.set_xlim(xlim)
