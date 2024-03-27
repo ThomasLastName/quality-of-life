@@ -34,6 +34,13 @@ def augment(X):
             np.ones( shape=(X.shape[0],1), dtype=X.dtype )  # assumes that X has dtype and shape attributes
         ))
 
+#
+# ~~~ Compute the moving average of a list (this reduces the list's length)
+def moving_average( list, window_size ):
+    kernel = np.ones(window_size) / window_size
+    return np.convolve( list, kernel, mode='valid' )
+
+
 # #
 # # ~~~ Entry-wise minimum between vectors (UPDATE: apparently np.minimum(vec1,vec2) does the same)
 # def least( vec1, vec2 ):
