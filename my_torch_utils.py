@@ -1,9 +1,11 @@
 
+# ~~~ Tom Winckelman wrote this; maintained at https://github.com/ThomasLastName/quality_of_life
+
 import sys
 import math
 import torch
 from tqdm import tqdm
-from quality_of_life.my_base_utils import support_for_progress_bars, my_warn
+from quality_of_life.my_base_utils import support_for_progress_bars
 
 #
 # ~~~ Set the random seed for pytorch, numpy, and the base random module all at once
