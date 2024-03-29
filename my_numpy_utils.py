@@ -36,9 +36,8 @@ def augment(X):
 
 #
 # ~~~ Compute the moving average of a list (this reduces the list's length)
-def moving_average( list, window_size ):
-    kernel = np.ones(window_size) / window_size
-    return np.convolve( list, kernel, mode='valid' )
+moving_average = lambda list, window_size: np.convolve( list, np.ones(window_size) / window_size, mode='valid' )
+
 
 
 # #
