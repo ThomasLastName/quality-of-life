@@ -12,15 +12,21 @@ import os
 
 from quality_of_life.my_base_utils import my_warn, process_for_saving, get_file_extension
 
-this_is_running_in_colab = ('google.colab' in sys.modules)
+try:
+    get_ipython()
+    from IPython.display import clear_output
+    this_is_running_in_a_notebook = True
+except NameError:
+    this_is_running_in_a_notebook = False
 
 class GifMaker:
     #
     # ~~~ Instantiate what is essentially just a list of images
-    def __init__( self, path_or_name="my_gif", ram_only=True ):
-        self.frames = []            # ~~~ the list of images
-        self.ram_only = ram_only    # ~~~ where to store the list of images
-        path_or_name = os.path.join( os.getcwd(), path_or_name ) if os.path.dirname(path_or_name)=="" else path_or_name
+    def __init__( self, path_or_name="my_gif", ram_only=True, live_frame_duration=0.01 ):
+        self.frames   = []                  # ~~~ the list of images
+        self.ram_only = ram_only            # ~~~ where to store the list of images
+        self.linger   = live_frame_duration # ~~~ how long to show each frame for the user, live
+        path_or_name  = os.path.join( os.getcwd(), path_or_name ) if os.path.dirname(path_or_name)=="" else path_or_name
         #
         # ~~~ Save a master path to be used by default for this gif
         self.master_path = process_for_saving(os.path.splitext(path_or_name)[0])   # ~~~ strip any file extension if present, and modify the file name if necessary to avoid save conflicts
@@ -31,7 +37,7 @@ class GifMaker:
             os.mkdir(self.temp_dir)
     #
     # ~~~ Method that, when called, saves a picture of whatever would be returned by plt.show() at that time
-    def capture( self, multiple_exposure=False, **kwargs ):
+    def capture( self, clear_frame_upon_capture=True, **kwargs ):
         #
         # ~~~ Save the figure either in RAM (if `ram_only==True`) or at a path called `filename`
         temp = BytesIO() if self.ram_only else None
@@ -41,9 +47,18 @@ class GifMaker:
         # ~~~ Add to our list of pictures (called `frames`), either the picture that's in RAM (if `ram_only==True`) or the path from which the picture can be loaded
         self.frames.append(temp.getvalue() if self.ram_only else filename)
         #
-        # ~~~ Delete the picture that we just saved (unless `multiple_exposure=True`)
-        if not multiple_exposure:
-            plt.close()
+        # ~~~ Show the current frame to the user, if self.linger is not None
+        if self.linger is not None:
+            if this_is_running_in_a_notebook:
+                plt.show()
+                clear_output(wait=True)
+            else:
+                plt.draw()
+                plt.pause(self.linger)
+        #
+        # ~~~ Delete the picture that we just saved (unless `clear_frame_upon_capture=False`)
+        if clear_frame_upon_capture:
+            plt.clf()
     #
     # ~~~ Delete the individually saved PNG files and their temp directory
     def clean_up(self):
@@ -69,7 +84,7 @@ class GifMaker:
             images = [ Image.open(file) for file in self.frames ]
         #
         # ~~~ Process destination path
-        destination = self.master_path if destination is None else destination                                     # ~~~ default to the path used for temp storage (which, itself, defaults to os.getcwd()+"my_gif")
+        destination = self.master_path if destination is None else destination                                      # ~~~ default to the path used for temp storage (which, itself, defaults to os.getcwd()+"my_gif")
         destination = os.path.join( os.getcwd(), destination ) if os.path.dirname(destination)=="" else destination # ~~~ if the destination path is just a filename, consider it as a file within the os.getcwd()
         destination = process_for_saving(destination.replace(".gif","")+".gif")                                     # ~~~ add `.gif` if not already preasent, turn "file_name.gif" into "file_name (1).gif", etc.
         #
@@ -88,6 +103,7 @@ class GifMaker:
         #
         # ~~~ Clean up the workspace if desired
         if clean_up:
+            plt.close()
             self.clean_up()
 
 
@@ -98,8 +114,12 @@ class GifMaker:
 # x = np.linspace(0,1)
 # N = 150
 # for j in range(N):
+#     plt.clf()
 #     plt.plot(x,np.cos(2*np.pi*(x-j/N)))
+#     plt.draw()
+#     plt.pause(0.01)
 #     gif.capture()
+
 
 # gif.develop(destination="cosine wave")
 
@@ -149,7 +169,7 @@ def points_with_curves(
         legend = True,
         fig = "new",
         ax = "new",
-        figsize = (6,6) if this_is_running_in_colab else None,
+        figsize = (6,6) if this_is_running_in_a_notebook else None,
         model_fit = True    # default usage: the plot to be rendered is meant to visualize a model's fit
     ):
     #
@@ -168,7 +188,7 @@ def points_with_curves(
     if curve_alphas is None:
         curve_alphas = [1,]*n_curves
     if xlim is None:
-        xlim = buffer(x)
+        xlim = buffer(x,multiplier=0.05)
     if grid is None:
         if "torch" in sys.modules.keys():
             module = sys.modules["torch"]
@@ -178,8 +198,6 @@ def points_with_curves(
             module = np
         grid = module.linspace( min(xlim), max(xlim), 1001 )
     if ylim is None and crop_ylim:
-        lo,hi = 0,0
-        extra = (hi-lo)*0.2
         ylim = buffer(y,multiplier=0.2)
     curve_thicknesses = [min(0.5,3/n_curves)]*n_curves if curve_thicknesses is None else curve_thicknesses[:n_curves]
     #
@@ -276,7 +294,7 @@ def side_by_side_prediction_plots(
             title_b = "Another Model",
             other_x = None,
             other_y = None,
-            figsize = (12,6) if this_is_running_in_colab else None,
+            figsize = (12,6) if this_is_running_in_a_notebook else None,
             figtitle = None,
             **kwargs
        ):
