@@ -61,7 +61,7 @@ class GifMaker:
             plt.clf()
     #
     # ~~~ Delete the individually saved PNG files and their temp directory
-    def clean_up(self):
+    def cleanup(self):
         if not self.ram_only:
             for file in self.frames:
                 if os.path.exists(file):
@@ -71,7 +71,7 @@ class GifMaker:
         self.frames = []
     #
     # ~~~ Method that "concatenates" the list of picture `frames` into a .gif
-    def develop( self, destination=None, total_duration=None, fps=30, clean_up=True, verbose=True, loop=0, **kwargs ):
+    def develop( self, destination=None, total_duration=None, fps=None, cleanup=True, verbose=True, loop=0, **kwargs ):
         #
         # ~~~ Process individual frames
         if self.ram_only:
@@ -89,12 +89,15 @@ class GifMaker:
         destination = process_for_saving(destination.replace(".gif","")+".gif")                                     # ~~~ add `.gif` if not already preasent, turn "file_name.gif" into "file_name (1).gif", etc.
         #
         # ~~~ Infer a frame rate from the desired duration, if the latter is supplied
+        fps_was_None = (fps is None)
+        if fps_was_None:
+            fps = 30
         if total_duration is None:
             total_duration = len(self.frames)/fps
         else:
-            if fps is not None:
-                my_warn("Both `total_duration` and `fps` were supplied. `fps` will be ignored.")
             fps = len(self.frames)/total_duration
+            if fps_was_None:
+                my_warn("Both `total_duration` and `fps` were supplied (note `fps` has a default value of 30). `fps` will be ignored.")
         #
         # ~~~ Save the thing
         if verbose:
@@ -102,9 +105,9 @@ class GifMaker:
         images[0].save( destination, save_all=True, append_images=images[1:], duration=int(1000/fps), loop=loop, **kwargs )
         #
         # ~~~ Clean up the workspace if desired
-        if clean_up:
+        if cleanup:
             plt.close()
-            self.clean_up()
+            self.cleanup()
 
 
 # from quality_of_life.my_visualization_utils import GifMaker
