@@ -38,7 +38,38 @@ def augment(X):
 # ~~~ Compute the moving average of a list (this reduces the list's length)
 moving_average = lambda list, window_size: np.convolve( list, np.ones(window_size) / window_size, mode='valid' )
 
+#
+# ~~~ Define a routine that creates the list "H = [(j-th hat function) for j in range(n)]" where n is the length of a sequence of knots
+def list_all_the_hat_functions(knots):
+    knots = np.sort(knots)
+    n = len(knots)
+    hat_functions = []
+    for j in range(n):
+        midpoint = knots[j]
+        if j==0:    # ~~~ the "first" one
+            next_point = knots[j+1]
+            hat_functions.append( 
+                    lambda x, b=midpoint, c=next_point: np.maximum( 0, 1-(x-b)/(c-b) )
+                )   # ~~~ the positive part of the the line with value 1 at b going down to value 0 at c
+        elif j==(n-1):# ~~~ the "last" one
+            prior_point = knots[j-1]
+            hat_functions.append(
+                    lambda x, a=prior_point, b=midpoint: np.maximum( 0, (x-a)/(b-a) )
+                )   # ~~~ the positive part of the the line with value 0 at a going up to value 1 at b
+        else:
+            prior_point = knots[j-1]
+            next_point = knots[j+1]
+            hat_functions.append(
+                    lambda x, a=prior_point, b=midpoint, c=next_point: np.maximum( 0, np.minimum(
+                            (x-a) / (b-a),
+                        1 - (x-b) / (c-b)
+                        ))
+                )
+    return hat_functions
 
+#
+# ~~~ Given a<b<c, define the piece-wise linear hat function which is zero on x<a, which is 1 at x=b, and which is 0 on x>c
+assemble_hat_function = lambda a,b,c: list_all_the_hat_functions([a,b,c])[1]
 
 # #
 # # ~~~ Entry-wise minimum between vectors (UPDATE: apparently np.minimum(vec1,vec2) does the same)
