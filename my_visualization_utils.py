@@ -19,22 +19,38 @@ try:
 except NameError:
     this_is_running_in_a_notebook = False
 
+#
+# ~~~ A simple function which closes any and all open matplotlib figures
+def close_all_figures():
+    while len(plt.get_fignums())>0:
+        plt.close()        
+
+#
+# ~~~ A tool for making gif's
 class GifMaker:
     #
     # ~~~ Instantiate what is essentially just a list of images
     def __init__( self, path_or_name="my_gif", ram_only=True, live_frame_duration=0.01 ):
         self.frames   = []                  # ~~~ the list of images
         self.ram_only = ram_only            # ~~~ where to store the list of images
-        self.linger   = live_frame_duration # ~~~ how long to show each frame for the user, live
         path_or_name  = os.path.join( os.getcwd(), path_or_name ) if os.path.dirname(path_or_name)=="" else path_or_name
+        self.live_frame_duration = live_frame_duration  # ~~~ how long to show each frame for the user, live
+        self.too_many_figures = []                      # ~~~ a safety feature; here we store flags that may get triggered
         #
         # ~~~ Save a master path to be used by default for this gif
-        self.master_path = process_for_saving(os.path.splitext(path_or_name)[0])   # ~~~ strip any file extension if present, and modify the file name if necessary to avoid save conflicts
+        self.master_path = process_for_saving(os.path.splitext(path_or_name)[0])    # ~~~ strip any file extension if present, and modify the file name if necessary to avoid save conflicts
         #
         # ~~~ If we don't want to store images only in RAM, then create a folder in which to store the pictures temporarily
         if not ram_only:
             self.temp_dir = process_for_saving(self.master_path+" temp storage")
             os.mkdir(self.temp_dir)
+    #
+    # ~~~ Safety feature of sorts which checks how many figures are currently open *and* complains and makes a note if that number is not exactly 1
+    def check_how_many_figs_are_open(self):
+        number_of_figs_currently_open = len(plt.get_fignums())                                                                              # ~~~ check how many
+        if not number_of_figs_currently_open==1:
+            my_warn(f"capture() method expects exactly 1 figure to be open, however {number_of_figs_currently_open} figures were found.")   # ~~~ complain
+            self.too_many_figures.append(number_of_figs_currently_open)                                                                     # ~~~ make a note
     #
     # ~~~ Method that, when called, saves a picture of whatever would be returned by plt.show() at that time
     def capture( self, clear_frame_upon_capture=True, **kwargs ):
@@ -47,18 +63,33 @@ class GifMaker:
         # ~~~ Add to our list of pictures (called `frames`), either the picture that's in RAM (if `ram_only==True`) or the path from which the picture can be loaded
         self.frames.append(temp.getvalue() if self.ram_only else filename)
         #
-        # ~~~ Show the current frame to the user, if self.linger is not None
-        if self.linger is not None:
+        # ~~~ Show the current frame to the user, if self.live_frame_duration is not None
+        if self.live_frame_duration is not None:
             if this_is_running_in_a_notebook:
                 plt.show()
                 clear_output(wait=True)
             else:
                 plt.draw()
-                plt.pause(self.linger)
+                plt.pause(self.live_frame_duration)
         #
-        # ~~~ Delete the picture that we just saved (unless `clear_frame_upon_capture=False`)
-        if clear_frame_upon_capture:
-            plt.clf()
+        # ~~~ A safety feature of sorts: check whether or not the number of open figures seems to be growing
+        self.check_how_many_figs_are_open()     # ~~~ if more than 1 fig is open, then the number of open figures will be appended to the attribute `self.too_many_figures`
+        number_of_figures_seems_to_be_growing = ( len(self.too_many_figures)>=3 and np.diff(self.too_many_figures).mean()>0.2 )    # ~~~ `0.2` would imply that a new figure is created on average once each 5 times `capture()` is called
+        if number_of_figures_seems_to_be_growing and (self.live_frame_duration is not None):
+            my_warn(f"At least twice, in between calls to `capture()`, the number of open figures has increased. This almost certainly means that new figures are being created in between calls to the `capture()` method, which interferes with live rendering of the gif. Therefore, live rendering of the gif will be deactivated. New frames will continue to be added to the gif, but they won't be shown live going forward.")
+            self.live_frame_duration = None
+        #
+        # ~~~ If clear_frame_upon_capture==True, attempt to delete (in the appropriate manner) the picture that we just saved
+        if clear_frame_upon_capture:    # ~~~ setting `clear_frame_upon_capture=False` disables all of these ad-hoc shenanigans
+            if self.live_frame_duration is None:
+                plt.clf()               # ~~~ if we're not concerned about interactive plotting, then just clear the frame plain and simple
+            else:
+                current_fig = plt.figure(plt.get_fignums()[-1])
+                axs_of_current_fig = current_fig.get_axes()
+                for ax in axs_of_current_fig:
+                    ax.clear()          # ~~~ closing the frame could actually interfere with interactive ploting; therefore, instead, try to just clear the *axes* of the frame
+            if number_of_figures_seems_to_be_growing:
+                close_all_figures()     # ~~~ on the other hand, if it seems like the number of figures is accumulating, try to curtail this by closing all figures
     #
     # ~~~ Delete the individually saved PNG files and their temp directory
     def cleanup(self):
@@ -246,12 +277,13 @@ def points_with_curves(
     assert len(x) == len(y)
     assert len(curves) <= len(curve_labels)
     assert len(curves) <= len(curve_colors)
+    assert (fig=="new")==(ax=="new")    # either both new, or neither new
     #        
     #~~~ Do the thing
     fig,ax = plt.subplots(figsize=figsize) if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
     ax.plot( x, y, point_mark, markersize=marker_size, color=marker_color, label=points_label )
-    context = sys.modules["torch"].no_grad() if "torch" in sys.modules.keys() else support_for_progress_bars    # ~~~ latter acts as a dummy context manager that does nothing
-    with context:
+    context = sys.modules["torch"].no_grad if "torch" in sys.modules.keys() else support_for_progress_bars    # ~~~ latter acts as a dummy context manager that does nothing
+    with context():
         for i in range(n_curves):
             try:    # ~~~ try to just call curves[i] on grid
                 curve_on_grid = curves[i](grid)
