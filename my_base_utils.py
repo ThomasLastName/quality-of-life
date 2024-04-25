@@ -131,7 +131,8 @@ def my_warn( message, format_of_message=bcolors.OKBLUE, *args, **kwargs ):
         old_color = revert_console(note_color=True)
         with support_for_progress_bars():
             print(bcolors.WARNING)  # also introduces a line break, which can be avoided using the `write = ... ; writer.write(...)` syntax found in other functions in this module
-            warnings.warn("line " +
+            warnings.warn(
+                        "line " +
                         bcolors.HEADER + f"{line_number}" +
                         bcolors.WARNING + " of " +
                         bcolors.HEADER + f"{file_name}" +
