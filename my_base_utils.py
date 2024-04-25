@@ -121,7 +121,7 @@ print(f"Modified path: {modified_path}")
 """
 
 
-def my_warn(message,*args,**kwargs):
+def my_warn( message, format_of_message=bcolors.OKBLUE, *args, **kwargs ):
     frame = inspect.currentframe()
     try:
         caller_frame = frame.f_back
@@ -131,13 +131,14 @@ def my_warn(message,*args,**kwargs):
         old_color = revert_console(note_color=True)
         with support_for_progress_bars():
             print(bcolors.WARNING)  # also introduces a line break, which can be avoided using the `write = ... ; writer.write(...)` syntax found in other functions in this module
-            warnings.warn( "line " +
+            warnings.warn("line " +
                         bcolors.HEADER + f"{line_number}" +
                         bcolors.WARNING + " of " +
                         bcolors.HEADER + f"{file_name}" +
                         bcolors.WARNING + " in " + 
                         bcolors.HEADER + f"{calling_function}: " +
-                        bcolors.WARNING + f"{message}" + "\n" + bcolors.ENDC,
+                        bcolors.WARNING + f"'{message}'" + "\n" +
+                        format_of_message,
                     UserWarning,
                     stacklevel=3,
                     *args,
