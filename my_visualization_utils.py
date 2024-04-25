@@ -10,7 +10,7 @@ from PIL import Image
 from io import BytesIO
 import os
 
-from quality_of_life.my_base_utils import my_warn, process_for_saving, get_file_extension
+from quality_of_life.my_base_utils import my_warn, process_for_saving, support_for_progress_bars
 
 try:
     get_ipython()
@@ -176,6 +176,13 @@ def points_with_curves(
         model_fit = True    # default usage: the plot to be rendered is meant to visualize a model's fit
     ):
     #
+    # ~~~ If x and y are pytorch tensors on gpu, then move them to cpu
+    try:
+        x = x.cpu()
+        y = y.cpu()
+    except AttributeError:
+        pass
+    #
     #~~~ Automatically set default values for several arguments
     n_curves = len(curves)
     if points_label is None:
@@ -243,17 +250,22 @@ def points_with_curves(
     #~~~ Do the thing
     fig,ax = plt.subplots(figsize=figsize) if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
     ax.plot( x, y, point_mark, markersize=marker_size, color=marker_color, label=points_label )
-    for i in range(n_curves):
-        try:    # ~~~ try to just call curves[i] on grid
-            curve_on_grid = curves[i](grid)
-        except:
-            try:    # ~~~ except, if that doesn't work, then assume we're in pytorch, 
-                with sys.modules["torch"].no_grad():
+    context = sys.modules["torch"].no_grad() if "torch" in sys.modules.keys() else support_for_progress_bars    # ~~~ latter acts as a dummy context manager that does nothing
+    with context:
+        for i in range(n_curves):
+            try:    # ~~~ try to just call curves[i] on grid
+                curve_on_grid = curves[i](grid)
+            except:
+                try:    # ~~~ except, if that doesn't work, then assume we're in pytorch, 
                     assumed_device = "cuda" if sys.modules["torch"].cuda.is_available() else "cpu"  # ~~~ assume that the curve is on "the best device available"
                     curve_on_grid = curves[i](grid.to(assumed_device)).cpu()
-            except:
-                raise ValueError("Unable to evaluate `curve(grid)`; please specify `grid` manually in `points_with_curves` and/or verify the definitions of the arguments `grid` and `curves` in `points_with_curves`")
-        ax.plot( grid, curve_on_grid, curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i], alpha=curve_alphas[i] )
+                except:
+                    raise ValueError("Unable to evaluate `curve(grid)`; please specify `grid` manually in `points_with_curves` and/or verify the definitions of the arguments `grid` and `curves` in `points_with_curves`")
+            #
+            # ~~~ Transfer grid and curve_on_grid to cpu, if they are pytorch tensors on gpu
+            grid = grid.cpu() if hasattr(grid,"cpu") else grid
+            curve_on_grid = curve_on_grid.cpu() if hasattr(curve_on_grid,"cpu") else curve_on_grid
+            ax.plot( grid, curve_on_grid, curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=curve_labels[i], alpha=curve_alphas[i] )
     #
     #~~~ Further aesthetic configurations
     ax.set_xlim(xlim)
