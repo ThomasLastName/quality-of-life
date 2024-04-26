@@ -61,7 +61,7 @@ class GifMaker:
         plt.savefig( temp if self.ram_only else filename, **kwargs )
         #
         # ~~~ Add to our list of pictures (called `frames`), either the picture that's in RAM (if `ram_only==True`) or the path from which the picture can be loaded
-        self.frames.append(temp.getvalue() if self.ram_only else filename)
+        self.frames.append( temp.getvalue() if self.ram_only else filename )
         #
         # ~~~ Show the current frame to the user, if self.live_frame_duration is not None
         if self.live_frame_duration is not None:
@@ -77,7 +77,7 @@ class GifMaker:
         number_of_figures_seems_to_be_growing = ( len(self.too_many_figures)>=3 and np.diff(self.too_many_figures).mean()>0.2 )    # ~~~ `0.2` would imply that a new figure is created on average once each 5 times `capture()` is called
         if number_of_figures_seems_to_be_growing and (self.live_frame_duration is not None):
             my_warn(f"At least twice, in between calls to `capture()`, the number of open figures has increased. This almost certainly means that new figures are being created in between calls to the `capture()` method, which interferes with live rendering of the gif. Therefore, live rendering of the gif will be deactivated. New frames will continue to be added to the gif, but they won't be shown live going forward.")
-            self.live_frame_duration = None
+            self.live_frame_duration = None     # ~~~ setting this to `None` disables interactive plotting
         #
         # ~~~ If clear_frame_upon_capture==True, attempt to delete (in the appropriate manner) the picture that we just saved
         if clear_frame_upon_capture:    # ~~~ setting `clear_frame_upon_capture=False` disables all of these ad-hoc shenanigans
