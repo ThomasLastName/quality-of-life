@@ -3,6 +3,15 @@ These are some helper routines that I want to be able to load without rewriting 
 
 ---
 
+# Prerequisites for Using This Code
+This repo depends only on some standard libraries.
+
+**List of Requirements in Order to Use this Code:**
+- [x] Have python installed and know how to edit and run python files
+- [x] For full functionality, have the prerequisite standard packages installed: `numpy`, `matplotlib`, `tensorflow`, `pytorch`, and `sklearn`. However, e.g., `tensorflow` is not necessary for `my_torch_utils` and `pytorch` is not necessary for `my_keras_utils`.
+
+---
+
 # Installation
 
 Basically, just clone this repo to anywhere on the path for your Python environment.
@@ -92,12 +101,3 @@ def _showwarnmsg_impl(msg):
         # the file (probably stderr) is invalid - this warning gets lost.
         pass
 ```
-
----
-
-# Prerequisites for Using This Code
-This repo depends only on some standard libraries.
-
-**List of Requirements in Order to Use this Code:**
-- [x] Have python installed and know how to edit and run python files
-- [x] Have the prerequisite standard packages installed: `numpy`, `matplotlib`, `tensorflow`, `pytorch`, and `sklearn`.
