@@ -3,6 +3,13 @@ These are some helper routines that I want to be able to load without rewriting 
 
 ---
 
+# Demo: Making .gifs
+
+[https://colab.research.google.com/drive/10sOSQChyJrrajtvnBRkfhUHAI-tNO6zQ?usp=sharing]([url](https://colab.research.google.com/drive/10sOSQChyJrrajtvnBRkfhUHAI-tNO6zQ?usp=sharing))
+
+
+---
+
 # Prerequisites for Using This Code
 This repo depends only on some standard libraries.
 
