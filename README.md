@@ -1,12 +1,6 @@
 # QAULITY OF LIFE HELPER ROUTINES
 These are some helper routines that I want to be able to load without rewriting them every time. For instance, now that I've found a way in which I prefer to format my matplotlib figures, I don't want to have to copy and paste the corresponding 10 lines of code every time. Instead, I prefer to define a callable function that implements this routine. This repo is full of such callable functions for tasks which I want to do often in many different projects.
 
----
-
-# Demo: Making .gifs
-
-[https://colab.research.google.com/drive/10sOSQChyJrrajtvnBRkfhUHAI-tNO6zQ?usp=sharing]([url](https://colab.research.google.com/drive/10sOSQChyJrrajtvnBRkfhUHAI-tNO6zQ?usp=sharing))
-
 
 ---
 
