@@ -14,7 +14,8 @@ from quality_of_life.my_base_utils import my_warn, process_for_saving, support_f
 
 try:
     get_ipython()
-    from IPython.display import clear_output
+    from IPython.display import clear_output, display
+    from IPython.display import Image as colab_image
     this_is_running_in_a_notebook = True
 except NameError:
     this_is_running_in_a_notebook = False
@@ -66,7 +67,7 @@ class GifMaker:
         # ~~~ Show the current frame to the user, if self.live_frame_duration is not None
         if self.live_frame_duration is not None:
             if this_is_running_in_a_notebook:
-                plt.show()
+                display(colab_image(self.frames[-1]))
                 clear_output(wait=True)
             else:
                 plt.draw()
