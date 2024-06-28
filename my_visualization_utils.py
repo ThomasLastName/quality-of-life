@@ -129,6 +129,7 @@ class GifMaker:
             fps = len(self.frames)/total_duration
             if fps_was_None:
                 my_warn("Both `total_duration` and `fps` were supplied (note `fps` has a default value of 30). `fps` will be ignored.")
+        total_duration = float(total_duration)
         #
         # ~~~ Save the thing
         if verbose:
