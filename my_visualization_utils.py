@@ -389,8 +389,8 @@ def side_by_side_prediction_plots(
 
 #
 # ~~~ Create a surface plot of f, assuming Z is the len(x)-by-len(y) matrix with Z[i,j]=f(x[i],y[j])
-def matrix_surf( x, y, Z, verbose=True, **kwargs ):
-    fig = go.Figure(go.Surface( x=x, y=y, z=Z ))
+def matrix_viz( x, y, Z, graph_object, verbose=True, **kwargs,  ):
+    fig = go.Figure(graph_object( x=x, y=y, z=Z ))
     #
     # ~~~ Further figure settings
     try:
@@ -405,7 +405,7 @@ def matrix_surf( x, y, Z, verbose=True, **kwargs ):
 
 #
 # ~~~ Create a surface plot of f, assuming the vector z has len(z)==len(x)==len(y), z[k]=f(x[k],y[k])
-def vector_surf( x, y, z, verbose=True, extrapolation_percent=0.05, res=501, **kwargs ):
+def vector_viz( x, y, z, graph_object=go.Surface, verbose=True, extrapolation_percent=0.05, res=301, **kwargs ):
     #
     # ~~~ Infer an xlim and ylim
     x_lo, x_hi = buffer( x, multiplier=extrapolation_percent )
@@ -419,7 +419,7 @@ def vector_surf( x, y, z, verbose=True, extrapolation_percent=0.05, res=501, **k
     #
     # ~~~ Interpolate onto the mesh and render the interpolated surface
     Z = griddata( np.column_stack([x,y]), z, (X,Y), method='cubic')
-    fig = go.Figure( go.Surface(x=X,y=Y,z=Z) )
+    fig = go.Figure( graph_object(x=X,y=Y,z=Z) )
     #
     # ~~~ Further figure settings
     try:
@@ -441,13 +441,14 @@ def apply_on_cartesian_product(f,x,y):
 
 #
 # ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the Cartesian product grid x \times y (calls `matrix_surf`)
-def cp_surf( x, y, f, plotly=True, **kwargs ) :
+def cp_viz( x, y, f, graph_object=go.Surface, plotly=True, **kwargs ) :
     if plotly:
-        return matrix_surf( x, y, apply_on_cartesian_product(f,x,y), **kwargs )
+        return matrix_viz( x, y, apply_on_cartesian_product(f,x,y), graph_object=graph_object, **kwargs )
     else:
         X,Y = np.meshgrid(x,y)
         Z = apply_on_cartesian_product(f,x,y)
-        # Plot the surface
+        #
+        # ~~~ Plot the surface
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.plot_surface(X, Y, Z, cmap='viridis')
@@ -459,26 +460,27 @@ def cp_surf( x, y, f, plotly=True, **kwargs ) :
 
 #
 # ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the cell xlim \times ylim (calls `func_surf` which calls `matrix_surf`)
-def cell_surf( f, xlim, ylim, res=501 ):
+def cell_viz( f, xlim, ylim, graph_object=go.Surface, res=301, **kwargs ) :
     x = np.linspace( xlim[0], xlim[-1], res )
     y = np.linspace( ylim[0], ylim[-1], res )
-    return cp_surf(x,y,f)
+    return cp_viz( x, y, f, graph_object=graph_object, **kwargs )
 
 #
-# ~~~ Temporary alias: `func_surf` is being renamed to `cp_surf`
+# ~~~ Temporary alias: `func_surf` is being renamed to `cp_viz`
 def func_surf(*args,**kwargs):
-    warnings.warn( "`func_surf` is being renamed to `cp_surf`. Please use the new name instead of the old one.", DeprecationWarning )
-    return cp_surf(*args,**kwargs)
+    warnings.warn( "`func_surf` is being renamed to `cp_viz`. Please use the new name instead of the old one.", DeprecationWarning )
+    return cp_viz(*args,**kwargs)
 
 #
-# ~~~ Temporary alias: `basic_surf` is being renamed to `cell_surf`
+# ~~~ Temporary alias: `basic_surf` is being renamed to `cell_viz`
 def basic_surf(*args,**kwargs):
     warnings.warn( "`basic_surf` is being renamed to `cell_surf`. Please use the new name instead of the old one.", DeprecationWarning )
-    return cp_surf(*args,**kwargs)
+    return cp_viz(*args,**kwargs)
 
 
 # x = np.linspace(0,5,1001)
 # y = np.linspace(1,2,301)
 # f = lambda matrix: np.sin(np.sum(matrix**2,axis=1))
-# cp_surf(x,y,f)
+# cp_viz(x,y,f)
+# cp_viz(x,y,f,graph_object=go.Heatmap)
 
