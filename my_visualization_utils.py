@@ -1,14 +1,16 @@
 
 # ~~~ Tom Winckelman wrote this; maintained at: https://github.com/ThomasLastName/quality_of_life
 
+import os
 import sys
+import warnings
 import numpy as np
 
+from scipy.interpolate import griddata
 from matplotlib import pyplot as plt
 from plotly import graph_objects as go
 from PIL import Image
 from io import BytesIO
-import os
 
 from quality_of_life.my_base_utils import my_warn, process_for_saving, support_for_progress_bars
 
@@ -389,11 +391,46 @@ def side_by_side_prediction_plots(
 # ~~~ Create a surface plot of f, assuming Z is the len(x)-by-len(y) matrix with Z[i,j]=f(x[i],y[j])
 def matrix_surf( x, y, Z, verbose=True, **kwargs ):
     fig = go.Figure(go.Surface( x=x, y=y, z=Z ))
-    if len(kwargs)>0:
-        fig.update_traces(**kwargs) # ~~~ acceptable kwargs can be found at https://plotly.com/python/reference/layout/
-    fig.show()
-    if verbose:
-        print("Image opened in browser.")
+    #
+    # ~~~ Further figure settings
+    try:
+        fig.update_layout(**kwargs) # ~~~ acceptable kwargs can be found at https://plotly.com/python/reference/layout/
+        fig.show()
+        if verbose:
+            print("Image opened in browser.")
+    except:
+        if verbose:
+            my_warn("Certain kwargs are not accepted by `plotly.graph_objects.Figure`. Instead the figure will be returned for manual setting.")
+        return fig
+
+#
+# ~~~ Create a surface plot of f, assuming the vector z has len(z)==len(x)==len(y), z[k]=f(x[k],y[k])
+def vector_surf( x, y, z, verbose=True, extrapolation_percent=0.05, res=501, **kwargs ):
+    #
+    # ~~~ Infer an xlim and ylim
+    x_lo, x_hi = buffer( x, multiplier=extrapolation_percent )
+    y_lo, y_hi = buffer( y, multiplier=extrapolation_percent )
+    #
+    # ~~~ Create a mesh for interpolation
+    X, Y = np.meshgrid(
+        np.linspace( x_lo, x_hi, res ),
+        np.linspace( y_lo, y_hi, res )
+    )
+    #
+    # ~~~ Interpolate onto the mesh and render the interpolated surface
+    Z = griddata( np.column_stack([x,y]), z, (X,Y), method='cubic')
+    fig = go.Figure( go.Surface(x=X,y=Y,z=Z) )
+    #
+    # ~~~ Further figure settings
+    try:
+        fig.update_layout(**kwargs) # ~~~ acceptable kwargs can be found at https://plotly.com/python/reference/layout/
+        fig.show()
+        if verbose:
+            print("Image opened in browser.")
+    except:
+        if verbose:
+            my_warn("Certain kwargs are not accepted by `plotly.graph_objects.Figure`. Instead the figure will be returned for manual setting.")
+        return fig
 
 #
 # ~~~ Return the len(x)-by-len(y) matrix Z matrix with Z[i,j] = f([x[i],y[j]])
@@ -403,10 +440,10 @@ def apply_on_cartesian_product(f,x,y):
     return f(cartesian_product).reshape(X.shape)
 
 #
-# ~~~ Wrap it in a neat package
-def func_surf(x,y,f,plotly=True):
+# ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the Cartesian product grid x \times y (calls `matrix_surf`)
+def cp_surf( x, y, f, plotly=True, **kwargs ) :
     if plotly:
-        matrix_surf( x, y, apply_on_cartesian_product(f,x,y) )
+        return matrix_surf( x, y, apply_on_cartesian_product(f,x,y), **kwargs )
     else:
         X,Y = np.meshgrid(x,y)
         Z = apply_on_cartesian_product(f,x,y)
@@ -421,17 +458,27 @@ def func_surf(x,y,f,plotly=True):
         plt.show()
 
 #
-# ~~~ Wrap it in a neat package
-def basic_surf( f, xlim, ylim, res=1001 ):
+# ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the cell xlim \times ylim (calls `func_surf` which calls `matrix_surf`)
+def cell_surf( f, xlim, ylim, res=501 ):
     x = np.linspace( xlim[0], xlim[-1], res )
     y = np.linspace( ylim[0], ylim[-1], res )
-    func_surf(x,y,f)
+    return cp_surf(x,y,f)
 
+#
+# ~~~ Temporary alias: `func_surf` is being renamed to `cp_surf`
+def func_surf(*args,**kwargs):
+    warnings.warn( "`func_surf` is being renamed to `cp_surf`. Please use the new name instead of the old one.", DeprecationWarning )
+    return cp_surf(*args,**kwargs)
 
+#
+# ~~~ Temporary alias: `basic_surf` is being renamed to `cell_surf`
+def basic_surf(*args,**kwargs):
+    warnings.warn( "`basic_surf` is being renamed to `cell_surf`. Please use the new name instead of the old one.", DeprecationWarning )
+    return cp_surf(*args,**kwargs)
 
 
 # x = np.linspace(0,5,1001)
 # y = np.linspace(1,2,301)
 # f = lambda matrix: np.sin(np.sum(matrix**2,axis=1))
-# func_surf(x,y,f)
+# cp_surf(x,y,f)
 
