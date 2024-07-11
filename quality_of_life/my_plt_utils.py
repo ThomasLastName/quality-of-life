@@ -378,7 +378,7 @@ def side_by_side_prediction_plots(
 
 #
 # ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the Cartesian product grid x \times y (this is a pyplot immitation of cp_viz)
-def cp_surf( x, y, f **kwargs ):
+def cp_surf( x, y, f, **kwargs ):
     #
     # ~~~ Make meshgrids out of the data
     X,Y = np.meshgrid(x,y)
