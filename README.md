@@ -39,7 +39,7 @@ That's up to you! However, please credit me with a comment along the lines of `#
 
 ## Recommend Application: Green Ouput, Yellow Warnings, and Red Errors (Windows)
 
-(For non-Windows, replace `Lib` with any directory on the PATH) After installing this code (wchich basically consists of putting a folder called `quality_of_life` containing these `.py` files in your `Lib` folder), I recommend creating a `usercustomize.py` file in your `Lib` folder containing the following code
+(For non-Windows, replace `Lib` with any directory on the PATH) After installing this code (see above), I recommend creating a `usercustomize.py` file in your `Lib` folder containing the following code
 ```
 #
 #~~~ Green outputs
