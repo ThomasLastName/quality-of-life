@@ -21,11 +21,10 @@ This repo depends only on some standard libraries.
 
 # Installation
 
-Try
+Unfortunately, you need to install the dependencies manually (see [https://github.com/ThomasLastName/quality-of-life/issues/4#issue-2402096762](https://github.com/ThomasLastName/quality-of-life/issues/4#issue-2402096762)), at least for now (see [https://github.com/ThomasLastName/quality-of-life/issues/4#issue-2402096762](https://github.com/ThomasLastName/quality-of-life/issues/4#issue-2402096762)). Having the dependencies installed, try 
 > `pip install --upgrade git+https://github.com/ThomasLastName/quality-of-life.git`
 
-Failing that, try cloning this repo to wherever you want and then add the directory of the repo to the PATH for your environment (or system).
-
+Failing that, try cloning this repo to wherever you want and then add the directory of the repo to the PATH for your environment (or system). I think this can be accomplished in 4 steps? First `cd wherever/the/hell`, then `git clone https://github.com/ThomasLastName/quality-of-life.git`, next `cd quality-of-life`, and finally `pip install -e .`?
 
 ---
 
