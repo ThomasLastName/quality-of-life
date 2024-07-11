@@ -16,14 +16,14 @@ These are some helper routines that I want to be able to load without rewriting 
 
 This repo depends only on some standard libraries. The ones installed automatically are `numpy`, `scipy`, `matplotlib`, `plotly`, and `tqdm`. However, the more advanced dependencies are left to the user to install manually. For instance, the sub-module `my_torch_utils` only works if you have pytorch installed, the sub-module `my_openai_utils` only works if you have openai installed, the sub-module `my_cvx_utils` only works if you have cvxpy installed, etc.
 
-As a result, only the following work "out of the box" (see **Installation**) _without_ the need for manual installation of dependencies:
- - ansi.py
- - my_base_utils.py
- - my_numpy_utils.py
- - my_plotly_utils.py
- - my_plt_utils.py
- - my_scipy_utils.py
- - my_visualization_utils.py ([deprecated](https://github.com/ThomasLastName/quality-of-life/issues/3))
+As a result, only the following work "out of the box" (see **Installation**) _without_ the need to manually install dependencies:
+ - `ansi.py`
+ - `my_base_utils.py`
+ - `my_numpy_utils.py`
+ - `my_plotly_utils.py`
+ - `my_plt_utils.py`
+ - `my_scipy_utils.py`
+ - `my_visualization_utils.py` ([deprecated](https://github.com/ThomasLastName/quality-of-life/issues/3))
 
 ---
 
