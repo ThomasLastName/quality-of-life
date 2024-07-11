@@ -11,29 +11,38 @@ These are some helper routines that I want to be able to load without rewriting 
 ---
 
 # Prerequisites for Using This Code
-This repo depends only on some standard libraries.
 
-**List of Requirements in Order to Use this Code:**
-- [x] Have python installed and know how to edit and run python files
-- [x] For full functionality, have the prerequisite standard packages installed: `numpy`, `scipy`, `matplotlib`, `plotly`, `tensorflow`, `pytorch`, and `sklearn`. However, e.g., `tensorflow` is not necessary for `my_torch_utils` and `pytorch` is not necessary for `my_keras_utils`.
+**Currently, installation requires that you have git installed on your machine!** (see also [#7](https://github.com/ThomasLastName/quality-of-life/issues/7))
+
+This repo depends only on some standard libraries. The ones installed automatically are `numpy`, `scipy`, `matplotlib`, `plotly`, and `tqdm`. However, the more advanced dependencies are left to the user to install manually. For instance, the sub-module `my_torch_utils` only works if you have pytorch installed, the sub-module `my_openai_utils` only works if you have openai installed, the sub-module `my_cvx_utils` only works if you have cvxpy installed, etc.
+
+As a result, only the following work "out of the box" (see **Installation**) _without_ the need for manual installation of dependencies:
+ - ansi.py
+ - my_base_utils.py
+ - my_numpy_utils.py
+ - my_plotly_utils.py
+ - my_plt_utils.py
+ - my_scipy_utils.py
+ - my_visualization_utils.py ([deprecated](https://github.com/ThomasLastName/quality-of-life/issues/3))
 
 ---
 
 # Installation
 
-Unfortunately, you need to install the dependencies manually (see **Prerequisites for Using This Code**), at least for now (see [#4](https://github.com/ThomasLastName/quality-of-life/issues/4)). Having the dependencies installed, try `pip install --upgrade git+https://github.com/ThomasLastName/quality-of-life.git`
+Have git installed on your machine. The same command `pip install --upgrade git+https://github.com/ThomasLastName/quality-of-life.git` can be used for both installing the code and updating the code. However, as noted above, only certain sub-modules will function "out of the box" (see **Prerequisites for Using This Code**).
 
-Failing that, try cloning this repo to wherever you want and then add the directory of the repo to the PATH for your environment (or system). I think this can be accomplished in 4 steps? First `cd wherever/the/hell`, then `git clone https://github.com/ThomasLastName/quality-of-life.git`, next `cd quality-of-life`, and finally `pip install -e .`?
+Failing that, try cloning this repo to wherever you want, then adding the directory of the repo to the PATH for your environment (or system) and installing all dependencies manually. I think this can be accomplished in 4 steps? First `cd wherever/the/hell`, then `git clone https://github.com/ThomasLastName/quality-of-life.git`, next `cd quality-of-life`, and finally `pip install -e .`? If you install this way, you'll also need to manually install _all_ of the dependencies.
 
 ---
 
 # Documentation
+
 Boy, I sure should write some!
 
 ---
 
 # Usage
-That's up to you! However, please credit me with a comment along the lines of `# ~~~ Tom wrote these; maintained at https://github.com/ThomasLastName/quality_of_life` in your code, if you use these!
+That's up to you! However, please credit me with a comment along the lines of `# ~~~ Tom wrote these; maintained at https://github.com/ThomasLastName/quality-of-life` in your code, if you use these!
 
 ---
 
