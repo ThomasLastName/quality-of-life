@@ -250,6 +250,13 @@ def support_for_progress_bars( warn=False, color=bcolors.OKGREEN ):
         else:
             colored_console_output( main_color=old_color, warn=warn )
 
+#
+#~~~ Compute [min-c,max+c] where c>0 is a buffer
+def buffer(vector,multiplier=0.05):
+    a = min(vector)
+    b = max(vector)
+    extra = (b-a)*multiplier
+    return [a-extra, b+extra]
 
 """
 ~

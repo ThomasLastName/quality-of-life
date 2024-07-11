@@ -71,6 +71,13 @@ def list_all_the_hat_functions(knots):
 # ~~~ Given a<b<c, define the piece-wise linear hat function which is zero on x<a, which is 1 at x=b, and which is 0 on x>c
 assemble_hat_function = lambda a,b,c: list_all_the_hat_functions([a,b,c])[1]
 
+#
+# ~~~ Return the len(x)-by-len(y) matrix Z matrix with Z[i,j] = f([x[i],y[j]])
+def apply_on_cartesian_product(f,x,y):
+    X,Y = np.meshgrid(x,y)
+    cartesian_product = np.column_stack((X.flatten(), Y.flatten())) # ~~~ the result is basically just a rearranged version of list(itertools.product(x,y))
+    return f(cartesian_product).reshape(X.shape)
+
 # #
 # # ~~~ Entry-wise minimum between vectors (UPDATE: apparently np.minimum(vec1,vec2) does the same)
 # def least( vec1, vec2 ):

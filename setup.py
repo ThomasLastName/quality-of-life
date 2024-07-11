@@ -7,11 +7,14 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'quality_of_life',
-    version = '2.0.2',
+    version = '2.1.0',
     url = 'https://github.com/ThomasLastName/quality-of-life.git',
     author = 'Thomas Winckelman',
     author_email = 'winckelman@tamu.edu',
     description = 'Helper routines for tasks present in many different projects',
-    packages = find_packages(),    
-    install_requires = [],
+    packages = find_packages(),
+    install_requires = [
+        "numpy",
+        "matplotlib"
+    ],
 )
