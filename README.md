@@ -21,7 +21,10 @@ This repo depends only on some standard libraries.
 
 # Installation
 
-Basically, just clone this repo to anywhere on the path for your Python environment.
+Try
+> `pip install --upgrade git+https://github.com/ThomasLastName/quality-of-life.git`
+
+Failing that, try cloning this repo to wherever you want and then add the directory of the repo to the PATH for your environment (or system).
 
 ---
 
