@@ -64,13 +64,19 @@ red_errors()
 or, if you already have a `usercustomize.py` file, consider adding the above code to it.
 
 
-~Additionally, in the source code for `warnings.py` (also in your `Lib` folder), I recommend modifying the definition of `_showwarnmsg_impl` as follows so that warnings will print in yellow~ (this is deprecated, because it depends on having the deprecated `quality_of_life` inside of a parent directory that is on the path; this is [issue #6](https://github.com/ThomasLastName/quality-of-life/issues/6))
+Additionally, in the source code for `warnings.py` (in Windows, this is also in `Lib` folder), I recommend modifying the definition of `_showwarnmsg_impl` as follows so that warnings will print in yellow (if anyone knows of a way to do this without modifying the source code, LMK please).
 
 ```
 #
 # ~~~ Yellow warnings
 def _showwarnmsg_impl(msg):
-    from quality_of_life.ansi import bcolors
+    # tom was here
+    import os, platform
+    if platform.system()=="Windows":    # platform.system() returns the OS python is running o0n | see https://stackoverflow.com/q/1854/11595884
+        os.system("color")              # Makes ANSI codes work | see Szabolcs' comment on https://stackoverflow.com/a/15170325/11595884
+    class bcolors:                      # https://stackoverflow.com/a/287944/11595884
+        WARNING = '\033[93m'
+        ENDC = '\033[0m'
     file = msg.file
     if file is None:
         file = sys.stderr
@@ -78,10 +84,11 @@ def _showwarnmsg_impl(msg):
             # sys.stderr is None when run with pythonw.exe:
             # warnings get lost
             return
-    text = bcolors.WARNING+_formatwarnmsg(msg)+bcolors.ENDC
+    text = bcolors.WARNING+_formatwarnmsg(msg)+bcolors.ENDC     # Tom was here
     try:
         file.write(text)
     except OSError:
         # the file (probably stderr) is invalid - this warning gets lost.
         pass
+
 ```
