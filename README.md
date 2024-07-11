@@ -37,8 +37,9 @@ That's up to you! However, please credit me with a comment along the lines of `#
 
 ---
 
-## Recommend Application: Green Ouput, Yellow Warnings, and Red Errors
-After installing this code (wchich basically consists of putting a folder called `quality_of_life` containing these `.py` files in your `Lib` folder), I recommend creating a `usercustomize.py` file in your `Lib` folder containing the following code
+## Recommend Application: Green Ouput, Yellow Warnings, and Red Errors (Windows)
+
+(For non-Windows, replace `Lib` with any directory on the PATH) After installing this code (wchich basically consists of putting a folder called `quality_of_life` containing these `.py` files in your `Lib` folder), I recommend creating a `usercustomize.py` file in your `Lib` folder containing the following code
 ```
 #
 #~~~ Green outputs
@@ -51,7 +52,10 @@ from quality_of_life.my_base_utils import red_errors
 red_errors()
 ```
 
-or, if you already have a `usercustomize.py` file, consider adding the above code to it. Additionally, in the source code for `warnings.py` (also in your `Lib` folder), I recommend modifying the definition of `_showwarnmsg_impl` as follows so that warnings will print in yellow
+or, if you already have a `usercustomize.py` file, consider adding the above code to it.
+
+
+~Additionally, in the source code for `warnings.py` (also in your `Lib` folder), I recommend modifying the definition of `_showwarnmsg_impl` as follows so that warnings will print in yellow~ (this is deprecated, because it depends on having the deprecated `quality_of_life` inside of a parent directory that is on the path; this is [issue #6](https://github.com/ThomasLastName/quality-of-life/issues/6))
 
 ```
 #
