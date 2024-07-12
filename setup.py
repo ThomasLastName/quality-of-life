@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'quality_of_life',
-    version = '2.3.1',
+    version = '2.3.2',
     url = 'https://github.com/ThomasLastName/quality-of-life.git',
     author = 'Thomas Winckelman',
     author_email = 'winckelman@tamu.edu',
@@ -18,6 +18,7 @@ setup(
         "scipy",
         "matplotlib",
         "plotly",
-        "tqdm"
+        "tqdm",
+        "requests"
     ],
 )
