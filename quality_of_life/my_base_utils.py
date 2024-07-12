@@ -212,7 +212,7 @@ def colored_console_output( main_color=bcolors.OKGREEN, warn=True, clean_slate=T
     if clean_slate:
         revert_console()
     if warn:
-            my_warn("`colored_console_output` is not necessarily integrated with other packages that also modify `sys.stdout`. For example, `tqdm` normally modifies `sys.stdout` in order to display the progress bar. For package integration, indent the block corresponding to the progress bar, and preface it by the context line `with support_for_progress_bars():`, e.g.,\n\nfrom tqdm import trange\nwith support_for_progress_bars():\n    for j in trange(20):\n        dummy_var = j   # replace with your code")
+        my_warn("`colored_console_output` is not necessarily integrated with other packages that also modify `sys.stdout`. For example, `tqdm` normally modifies `sys.stdout` in order to display the progress bar. For package integration, indent the block corresponding to the progress bar, and preface it by the context line `with support_for_progress_bars():`, e.g.,\n\nfrom tqdm import trange\nwith support_for_progress_bars():\n    for j in trange(20):\n        dummy_var = j   # replace with your code")
     sys.stdout = ColorizedStdout( sys.stdout, main_color=main_color )
 
 
