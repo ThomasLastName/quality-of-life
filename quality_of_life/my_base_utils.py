@@ -258,6 +258,23 @@ def buffer(vector,multiplier=0.05):
     extra = (b-a)*multiplier
     return [a-extra, b+extra]
 
+#
+# ~~~ Start from the current working directory
+def peel_back_cwd(stopping_lambda):
+    path = os.getcwd()
+    while not stopping_lambda(path):
+        path, dirname = os.path.split(path)
+        if len(dirname)==0:
+            raise OSError(f"The stopping criterion was not met by any ancestor of the working directory {os.getcwd()}")
+    return path
+
+#
+# ~~~ Find the root directory of a git repository when run from anywhere in the repo
+def find_root_dir_of_repo():
+    contains_dot_git = lambda path: os.path.exists(os.path.join(path,".git"))
+    return peel_back_cwd( contains_dot_git )
+
+
 """
 ~
 ~ RECOMMENDED: create a usercustomize.py file in Lib if none exists; once one exists, add the following to it
