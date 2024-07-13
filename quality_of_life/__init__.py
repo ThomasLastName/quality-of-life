@@ -41,7 +41,7 @@ def check_for_update_available(__version__):
         if __version__ < latest_version:
             import warnings
             warnings.warn(
-                f"You are using bnns version {__version__}, but version {latest_version} is available. See {__url__} for more information, including how to upgrade.",
+                f"You are using {dist.project_name} version {__version__}, but version {latest_version} is available. See {__url__} for more information, including how to upgrade.",
                 UserWarning
             )
             # print("test")
