@@ -274,6 +274,14 @@ def find_root_dir_of_repo():
     contains_dot_git = lambda path: os.path.exists(os.path.join(path,".git"))
     return peel_back_cwd( contains_dot_git )
 
+#
+# ~~~ Format a dictionary for printing; from https://www.geeksforgeeks.org/python-pretty-print-a-dictionary-with-dictionary-value/
+format_dict = lambda dict: json.dumps(dict,indent=4)
+
+#
+# ~~~ Pretty print a dictionary; from https://www.geeksforgeeks.org/python-pretty-print-a-dictionary-with-dictionary-value/
+print_dict = lambda dict: print(format_dict(dict))
+
 
 """
 ~
