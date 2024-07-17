@@ -7,6 +7,8 @@ import traceback
 import sys
 import os
 import json
+import math
+import random
 from contextlib import contextmanager
 warnings.simplefilter("always",UserWarning)
 from quality_of_life.ansi import bcolors
@@ -47,6 +49,7 @@ def dicts_are_identical( dict, other_dict ):
         bool = min( bool, dict[key]==other_dict[key] )
     return bool
 
+
 def clear_last_line(prompt):
     # Move cursor to the beginning of the line
     sys.stdout.write('\r')
@@ -61,6 +64,7 @@ def get_input_with_clear(prompt="Enter something: "):
     input_text = input(prompt)
     clear_last_line(prompt)
     return input_text
+
 
 def load_txt(filepath):
     with open(filepath, 'r', encoding='utf-8') as infile:
@@ -110,7 +114,6 @@ def modify_path(file_path_or_name,force=False):
     #
     # ~~~ Reattach any doodads we removed
     return file_path_or_name.replace( file_name_and_extnesion, modified_name+original_extension )
-
 
 
 def process_for_saving(file_path_or_name):
@@ -287,6 +290,32 @@ format_dict = lambda dict: json.dumps(dict,indent=4)
 #
 # ~~~ Pretty print a dictionary; from https://www.geeksforgeeks.org/python-pretty-print-a-dictionary-with-dictionary-value/
 print_dict = lambda dict: print(format_dict(dict))
+
+
+#
+# ~~~ Get the indices for a train/val/test split based on the desired list of sizes of the data subsets
+def random_indices_by_size( n, group_sizes ):
+    if not math.isclose( sum(group_sizes), n ):
+        raise ValueError(f"The sum of group sizes ({sum(group_sizes)}) should be n ({n}).")
+    if not all( isinstance(size,int) for size in group_sizes ):
+        return ValueError("All group sizes must be integers.")
+    list_of_indices = list(range(n))
+    random.shuffle(list_of_indices)
+    groups = []
+    current_index = 0
+    for size in group_sizes:
+        groups.append( list_of_indices[current_index:(current_index+size)])
+        current_index += size
+    return groups
+
+#
+# ~~~ Get the indices for a train/val/test split based on the desired list of percentages of the data subsets
+def random_indices_by_percent( n, group_percentages ):
+    if not math.isclose( sum(group_percentages), 1 ):
+        raise ValueError("The sum of group percentages must be 1.")
+    group_sizes = [ int(n*percent) for percent in group_percentages ]
+    return random_indices_by_size(n,group_sizes)
+
 
 
 """
