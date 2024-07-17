@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'quality_of_life',
-    version = '2.6.0',
+    version = '2.7.0',
     url = 'https://github.com/ThomasLastName/quality-of-life.git',
     author = 'Thomas Winckelman',
     author_email = 'winckelman@tamu.edu',
