@@ -13,18 +13,24 @@ from quality_of_life.ansi import bcolors
 
 #
 # ~~~ Save a dictionary as a .json; from https://stackoverflow.com/a/7100202/11595884
-def dict_to_json( dict, path_including_file_extension, override=False ):
+def dict_to_json( dict, path_including_file_extension, override=False, verbose=True ):
+    #
+    # ~~~ Check that the path is available
     not_empty = os.path.exists(path_including_file_extension)
     #
     # ~~~ If that path already exists and the user did not say "over-ride" it, then raise an error
     if not_empty and not override:
-        raise ValueError("The specified path already exists. Operation halted. Specify override=True to override this halting.")
+        raise ValueError("The specified path already exists. Operation halted. Specify `override=True` to override this halting.")
     #
     # ~~~ If the file path is either available, or the user gave permission to over-ride it, then proceed to write there
     with open(path_including_file_extension,'w') as fp:
         json.dump(dict,fp)
-    if override:
-        my_warn(f"The path {path_including_file_extension} was not empty. It has been overwritten.")
+    #
+    # ~~~ Print helpful messages
+    if verbose:
+        if override:
+            my_warn(f"The path {path_including_file_extension} was not empty. It has been overwritten.")
+        print(f"Created {path_including_file_extension} at {os.path.abspath(path_including_file_extension)}")
 
 #
 # ~~~ Load a .json as a dictionary; from https://stackoverflow.com/a/7100202/11595884
