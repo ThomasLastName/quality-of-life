@@ -5,7 +5,7 @@ from scipy.interpolate import griddata
 
 #
 # ~~~ Given any vectors x and y not on a grid, and a vector z[j]=f(x[j],y[j]), interploate/extrapolate to square mesh-grids X and Y
-def extend_to_grid( x, y, z, extrapolation_percent=0.05, res=301 ):
+def extend_to_grid( x, y, z, extrapolation_percent=0.05, res=501, method="cubic" ):
     #
     # ~~~ Infer an xlim and ylim
     x_lo, x_hi = buffer( x, multiplier=extrapolation_percent )
@@ -18,7 +18,7 @@ def extend_to_grid( x, y, z, extrapolation_percent=0.05, res=301 ):
     )
     #
     # ~~~ Interpolate onto the mesh and render the interpolated surface
-    Z = griddata( np.column_stack([x,y]), z, (X,Y), method='cubic' )
+    Z = griddata( np.column_stack([x,y]), z, (X,Y), method=method )
     #
     # ~~~ In its new processed form, `conventional_plotting_function(X,Y,Z)` should hopefully work
     return X,Y,Z
