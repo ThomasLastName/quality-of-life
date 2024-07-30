@@ -291,7 +291,6 @@ format_dict = lambda dict: json.dumps(dict,indent=4)
 # ~~~ Pretty print a dictionary; from https://www.geeksforgeeks.org/python-pretty-print-a-dictionary-with-dictionary-value/
 print_dict = lambda dict: print(format_dict(dict))
 
-
 #
 # ~~~ Get the indices for a train/val/test split based on the desired list of sizes of the data subsets
 def random_indices_by_size( n, group_sizes ):
