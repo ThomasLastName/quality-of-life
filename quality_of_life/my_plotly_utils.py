@@ -50,21 +50,7 @@ def vector_viz( x, y, z, graph_object=go.Surface, verbose=True, extrapolation_pe
 #
 # ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the Cartesian product grid x \times y (calls `matrix_surf`)
 def cp_viz( x, y, f, graph_object=go.Surface, plotly=True, **kwargs ) :
-    if plotly:
-        return matrix_viz( x, y, apply_on_cartesian_product(f,x,y), graph_object=graph_object, **kwargs )
-    else:
-        X,Y = np.meshgrid(x,y)
-        Z = apply_on_cartesian_product(f,x,y)
-        #
-        # ~~~ Plot the surface
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot_surface(X, Y, Z, cmap='viridis')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('f(matrix)')
-        ax.set_title('Surface plot of f(matrix)')
-        plt.show()
+    return matrix_viz( x, y, apply_on_cartesian_product(f,x,y), graph_object=graph_object, **kwargs )
 
 #
 # ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the cell xlim \times ylim (calls `func_surf` which calls `matrix_surf`)
