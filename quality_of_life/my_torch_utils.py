@@ -39,9 +39,12 @@ def generate_random_1d_data( ground_truth, n_train, n_test=1001, a=-1, b=1, nois
 # ~~~ Extract the raw tensors from a pytorch Dataset
 def convert_Dataset_to_Tensors( object_of_class_Dataset, batch_size=None ):
     assert isinstance( object_of_class_Dataset, torch.utils.data.Dataset )
-    n_data = len(object_of_class_Dataset)
-    b = n_data if batch_size is None else batch_size
-    return next(iter(torch.utils.data.DataLoader( object_of_class_Dataset, batch_size=b )))  # return the actual tuple (X,y)
+    if isinstance( object_of_class_Dataset, convert_Tensors_to_Dataset ):
+        return object_of_class_Dataset.X, object_of_class_Dataset.y
+    else:
+        n_data = len(object_of_class_Dataset)
+        b = n_data if batch_size is None else batch_size
+        return next(iter(torch.utils.data.DataLoader( object_of_class_Dataset, batch_size=b )))  # return the actual tuple (X,y)
 
 #
 # ~~~ Convert Tensors into a pytorch Dataset; from https://fmorenovr.medium.com/how-to-load-a-custom-dataset-in-pytorch-create-a-customdataloader-in-pytorch-8d3d63510c21
