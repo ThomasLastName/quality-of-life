@@ -66,7 +66,9 @@ def get_input_with_clear(prompt="Enter something: "):
     return input_text
 
 
-def load_txt(filepath):
+def load_txt( filepath, from_base_dir=False ):
+    if from_base_dir:
+        filepath = os.path.join(find_root_dir_of_python(),filepath)
     with open(filepath, 'r', encoding='utf-8') as infile:
         return infile.read()
 
@@ -162,14 +164,18 @@ def my_warn( message, format_of_message=bcolors.OKBLUE, *args, **kwargs ):
         del frame
 
 #
-# ~~~ An alternative to the defauly sys.excepthook which, additionally, colors the error output in red
+# ~~~ An alternative to the default sys.excepthook which, additionally, colors the error output in red
 def red_excepthook(type, value, traceback_obj):
-    # Get the original error message
+    #
+    # ~~~ Get the original error message
     error_message = ''.join(traceback.format_exception(type, value, traceback_obj))
-    # Append frowning face emoji to the original error message
+    #
+    # ~~~ Append frowning face emoji to the original error message
     modified_error_message = bcolors.FAIL + error_message.rstrip() + bcolors.ENDC + " \U0001F62D"
-    # Print the modified error message
+    #
+    # ~~~ Print the modified error message
     print( modified_error_message, file=sys.stderr )
+
 
 #
 #~~~ Override the default excepthook with the custom_excepthook
@@ -282,6 +288,13 @@ def peel_back_cwd(stopping_lambda):
 def find_root_dir_of_repo():
     contains_dot_git = lambda path: os.path.exists(os.path.join(path,".git"))
     return peel_back_cwd( contains_dot_git )
+
+#
+# ~~~ Find the root directory of a python version
+def find_root_dir_of_python():
+    contains_python_dot_exe = lambda path: os.path.exists(os.path.join(path,"Python.exe"))
+    return peel_back_cwd( contains_python_dot_exe )
+
 
 #
 # ~~~ Format a dictionary for printing; from https://www.geeksforgeeks.org/python-pretty-print-a-dictionary-with-dictionary-value/
