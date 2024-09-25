@@ -31,11 +31,19 @@ class GifMaker:
     #
     # ~~~ Instantiate what is essentially just a list of images
     def __init__( self, path_or_name="my_gif", ram_only=True, live_frame_duration=0.01 ):
-        self.frames   = []                  # ~~~ the list of images
-        self.ram_only = ram_only            # ~~~ where to store the list of images
+        #
+        # ~~~ Baseic attributes
+        self.frames   = []          # ~~~ the list of images
+        self.ram_only = ram_only    # ~~~ boolean, whether to store images only in RAM (instead of using the disk)
         path_or_name  = os.path.join( os.getcwd(), path_or_name ) if os.path.dirname(path_or_name)=="" else path_or_name
-        self.live_frame_duration = live_frame_duration  # ~~~ how long to show each frame for the user, live
         self.too_many_figures = []                      # ~~~ a safety feature; here we store flags that may get triggered
+        self.live_frame_duration = live_frame_duration  # ~~~ how long to show each frame for the user, live
+        #
+        # ~~~ I was getting unexpected results from live_frame_duration=0, but a simple `if not live_frame_duration>0` clause fails to account for `live_frame_duration=None`, so I used try/except
+        try:
+            assert self.live_frame_duration>0
+        except:
+            self.live_frame_duration = None
         #
         # ~~~ Save a master path to be used by default for this gif
         self.master_path = process_for_saving(os.path.splitext(path_or_name)[0])    # ~~~ strip any file extension if present, and modify the file name if necessary to avoid save conflicts
