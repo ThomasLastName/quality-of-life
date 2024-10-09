@@ -132,7 +132,7 @@ print(f"Modified path: {modified_path}")
 """
 
 
-def my_warn( message, format_of_message=bcolors.OKBLUE, *args, **kwargs ):
+def my_warn( message, *args, **kwargs ):
     frame = inspect.currentframe()
     try:
         caller_frame = frame.f_back
@@ -149,8 +149,7 @@ def my_warn( message, format_of_message=bcolors.OKBLUE, *args, **kwargs ):
                         bcolors.HEADER + f"{file_name}" +
                         bcolors.WARNING + " in " + 
                         bcolors.HEADER + f"{calling_function}: " +
-                        bcolors.WARNING + f"'{message}'" + "\n" +
-                        format_of_message,
+                        bcolors.WARNING + f"'{message}'",
                     UserWarning,
                     stacklevel=3,
                     *args,
