@@ -5,6 +5,7 @@ from quality_of_life.ansi import bcolors
 import sys
 import traceback
 from openai import OpenAI
+import re
 
 #
 # ~~~ https://stackoverflow.com/a/10446010/11595884
@@ -90,7 +91,9 @@ def snarky_excepthook( type, value, traceback_obj ):
             "Your commentary should take into account the specifics of this user's code."
         ])
         snarky_prompt.append({ "role":"user", "content":"Please make fun of me." })
-        snarky_comment = cut_off_incomplete_sentence(get_next_response(snarky_prompt))                           
+        snarky_comment = cut_off_incomplete_sentence(get_next_response(snarky_prompt))
+        if snarky_comment == "":
+            snarky_comment = "I'm sorry, I can't make fun of you because I'm a stupid AI. I tried to come up with a response, but I failed even more pathetically than you did."
         #
         # ~~~ Append the code snippet to the error message
         modified_error_message = (bcolors.FAIL + error_message.rstrip() + "\n\n" +
@@ -182,10 +185,15 @@ def format_line(
 #
 # ~~~ In case the token limit ends us mid-sentence, strip down to the last complete sentence
 def cut_off_incomplete_sentence(text):
+    # last_punctuation = max(text.rfind('.'),text.rfind('!'))
+    # return text if last_punctuation == -1 else text[:last_punctuation + 1]
     #
-    # ~~~ Find the last occurrence of '.' or '!'
-    last_punctuation = max(text.rfind('.'),text.rfind('!'))
-    return text if last_punctuation == -1 else text[:last_punctuation + 1]
+    # ~~~ IDK, chat-gpt came up with this one:
+    pattern = r'([A-Z][^.!?]*[.!?](?=\s|$))'
+    matches = re.findall(pattern,text)
+    return ' '.join(matches)
+
+
 
 #
 # ~~~ Format a list of text strings (instructions ot the bot) in the format which OpenAI expects
