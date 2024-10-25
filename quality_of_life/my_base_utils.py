@@ -191,14 +191,12 @@ class ColorizedStdout:
         self.main_color = main_color
     def write(self, message):
         # Apply color formatting to the message before writing
-        colored_message = f"{self.main_color}{message.strip()}{bcolors.ENDC}"
+        message_seen_by_user = message.rstrip('\n') if self.pending_newline else message
+        colored_message = f"{self.main_color}{message_seen_by_user}{bcolors.ENDC}"
         if self.pending_newline:
             self.original_stdout.write('\n')  # Add a newline before subsequent lines
         self.original_stdout.write(colored_message)
-        if message.endswith('\n'):
-            self.pending_newline = False
-        else:
-            self.pending_newline = True
+        self.pending_newline = not message.endswith('\n')
     def __getattr__(self, attr):
         # Pass other attribute calls to the original sys.stdout
         return getattr(self.original_stdout, attr)
