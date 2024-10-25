@@ -200,6 +200,7 @@ def points_with_curves(
         xlim = None,
         ylim = None,
         crop_ylim = True,
+        tight_layout = True,
         show = True,
         legend = True,
         fig = "new",
@@ -324,8 +325,9 @@ def points_with_curves(
         legend_handles = [by_label[label][0] for label in by_label]
         legend_labels = [f"{label}" for label in by_label]  # Include line style in label
         plt.legend(legend_handles,legend_labels)
+    if tight_layout:
+        plt.tight_layout()
     if show:
-        fig.tight_layout()
         plt.show()
     else:
         return fig, ax
