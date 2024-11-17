@@ -292,14 +292,18 @@ def find_root_dir_of_python():
     contains_python_dot_exe = lambda path: os.path.exists(os.path.join(path,"Python.exe"))
     return peel_back_cwd( contains_python_dot_exe )
 
-
 #
-# ~~~ Format a dictionary for printing; from https://www.geeksforgeeks.org/python-pretty-print-a-dictionary-with-dictionary-value/
-format_dict = lambda dict: json.dumps(dict,indent=4)
+# ~~~ Format a long list for printing
+def format_value(value):
+    if isinstance(value, list) and len(value) > 4:
+        #
+        # ~~~ Show only the first two and last two elements
+        return [ value[0], value[1], "...", value[-2], value[-1] ]
+    return value
 
 #
 # ~~~ Pretty print a dictionary; from https://www.geeksforgeeks.org/python-pretty-print-a-dictionary-with-dictionary-value/
-print_dict = lambda dict: print(format_dict(dict))
+print_dict = lambda dict: print(json.dumps( {k: format_value(v) for k, v in dict.items()}, indent=4 ))
 
 #
 # ~~~ Get the indices for a train/val/test split based on the desired list of sizes of the data subsets
