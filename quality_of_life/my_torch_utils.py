@@ -365,3 +365,10 @@ def nonredundant_copy_of_module_list(module_list,sequential=False):
             # ~~~ For other layers (activations, Flatten, softmax, etc.) just copy it
             layers.append(layer)
     return torch.nn.Sequential(*layers) if sequential else torch.nn.ModuleList(layers)
+
+#
+# ~~~ Return the len(x)-by-len(y) matrix Z matrix with Z[i,j] = f([x[i],y[j]])
+def apply_on_cartesian_product(f,x,y):
+    X,Y = torch.meshgrid( x, y, indexing="xy" )
+    cartesian_product = torch.column_stack((X.flatten(), Y.flatten())) # ~~~ the result is basically just a rearranged version of list(itertools.product(x,y))
+    return f(cartesian_product).reshape(X.shape)

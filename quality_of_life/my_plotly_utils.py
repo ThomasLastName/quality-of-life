@@ -12,11 +12,14 @@ from quality_of_life.my_scipy_utils import extend_to_grid
 #
 # ~~~ Create a surface plot of f, assuming Z is the len(x)-by-len(y) matrix with Z[i,j]=f(x[i],y[j])
 def matrix_viz( x, y, Z, graph_object, verbose=True, **kwargs,  ):
+    #
+    # ~~~ Do the plotly equivalent of plt.plot
     fig = go.Figure(graph_object( x=x, y=y, z=Z ))
     #
     # ~~~ Further figure settings
     try:
-        fig.update_layout(**kwargs) # ~~~ acceptable kwargs can be found at https://plotly.com/python/reference/layout/
+        if len(kwargs)>0:
+            fig.update_layout(**kwargs) # ~~~ acceptable kwargs can be found at https://plotly.com/python/reference/layout/
         fig.show()
         if verbose:
             print("Image opened in browser.")
@@ -46,35 +49,50 @@ def vector_viz( x, y, z, graph_object=go.Surface, verbose=True, extrapolation_pe
             my_warn("Certain kwargs are not accepted by `plotly.graph_objects.Figure`. Instead the figure will be returned for manual setting.")
         return fig
 
-
 #
 # ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the Cartesian product grid x \times y (calls `matrix_surf`)
-def cp_viz( x, y, f, graph_object=go.Surface, plotly=True, **kwargs ) :
-    return matrix_viz( x, y, apply_on_cartesian_product(f,x,y), graph_object=graph_object, **kwargs )
+def cp_surf( x, y, f, graph_object=go.Surface, **kwargs ):
+    #
+    # ~~~ Form the matrix Z[i,j] = f([x[i],y[j]])
+    try:
+        from quality_of_life.my_torch_utils import apply_on_cartesian_product as torch_apply_on_cartesian_product
+        Z = torch_apply_on_cartesian_product( f, x, y )
+        Z = Z.cpu().detach().numpy()
+    except:
+        Z = apply_on_cartesian_product( f, x, y )
+    #
+    # ~~~ Call the originally defined routine
+    return matrix_viz( x, y, Z, graph_object=graph_object, **kwargs )
 
 #
 # ~~~ Return the surface plot of a function f = lambda xy_pairs: f(xy_pairs) on the cell xlim \times ylim (calls `func_surf` which calls `matrix_surf`)
-def cell_viz( f, xlim, ylim, graph_object=go.Surface, res=301, **kwargs ) :
-    x = np.linspace( xlim[0], xlim[-1], res )
-    y = np.linspace( ylim[0], ylim[-1], res )
-    return cp_viz( x, y, f, graph_object=graph_object, **kwargs )
+def cell_surf( f, xlim, ylim, graph_object=go.Surface, res=301, **kwargs ) :
+    try:
+        import torch
+        _ = f(torch.randn(20,2))
+        x = torch.linspace( xlim[0], xlim[-1], res )
+        y = torch.linspace( ylim[0], ylim[-1], res )
+    except:
+        x = np.linspace( xlim[0], xlim[-1], res )
+        y = np.linspace( ylim[0], ylim[-1], res )
+    return cp_surf( x, y, f, graph_object=graph_object, **kwargs )
 
 #
-# ~~~ Temporary alias: `func_surf` is being renamed to `cp_viz`
+# ~~~ Temporary alias: `func_surf` is being renamed to `cp_surf`
 def func_surf(*args,**kwargs):
-    warnings.warn( "`func_surf` is being renamed to `cp_viz`. Please use the new name instead of the old one.", DeprecationWarning )
-    return cp_viz(*args,**kwargs)
+    warnings.warn( "`func_surf` is being renamed to `cp_surf`. Please use the new name instead of the old one.", DeprecationWarning )
+    return cp_surf(*args,**kwargs)
 
 #
-# ~~~ Temporary alias: `basic_surf` is being renamed to `cell_viz`
+# ~~~ Temporary alias: `basic_surf` is being renamed to `cell_surf`
 def basic_surf(*args,**kwargs):
     warnings.warn( "`basic_surf` is being renamed to `cell_surf`. Please use the new name instead of the old one.", DeprecationWarning )
-    return cp_viz(*args,**kwargs)
+    return cp_surf(*args,**kwargs)
 
 
 # x = np.linspace(0,5,1001)
 # y = np.linspace(1,2,301)
 # f = lambda matrix: np.sin(np.sum(matrix**2,axis=1))
-# cp_viz(x,y,f)
-# cp_viz(x,y,f,graph_object=go.Heatmap)
+# cp_surf(x,y,f)
+# cp_surf(x,y,f,graph_object=go.Heatmap)
 
