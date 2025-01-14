@@ -3,7 +3,9 @@
 
 import cvxpy as cvx
 import numpy as np
-from quality_of_life.my_base_utils import my_warn
+from tqdm.auto import tqdm
+from quality_of_life.my_base_utils import my_warn, support_for_progress_bars
+
 
 #
 # ~~~ Try to find a vector x satistfying Ax \geq b
@@ -125,6 +127,7 @@ def solve_dual_of_QCQP(
         c_J = list(),   # ~~~ c_J is the list of the c_j's
         d_J = list(),   # ~~~ d_J is the list of the d_j's
         solver = cvx.SCS,
+        max_fw_iter = None,
         *args,
         **kwargs
     ):
@@ -132,18 +135,87 @@ def solve_dual_of_QCQP(
     n_inequality_constraints = len(H_I)
     n_equality_constraints = len(H_J)
     n_primal_variables = len(c_o)
-    #
-    # ~~~ Define the semi-definite program according to equation (9) of https://www.princeton.edu/~aaa/Public/Teaching/ORF523/S16/ORF523_S16_Lec12_gh.pdf
-    lamb = cvx.Variable( n_inequality_constraints, nonneg=True ) if n_inequality_constraints>0 else None
-    eta  = cvx.Variable( n_equality_constraints ) if n_equality_constraints>0 else None
-    gamma = cvx.Variable(1)
-    quadratic_part  =  H_o + sum(lamb[i]*H_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*H_J[j] for j in range(n_equality_constraints))
-    linear_part     =  c_o + sum(lamb[i]*c_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*c_J[j] for j in range(n_equality_constraints))
-    constant_part   =  d_o + sum(lamb[i]*d_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*d_J[j] for j in range(n_equality_constraints))
-    M = cvx.vstack([
-            cvx.hstack([ quadratic_part, cvx.reshape( linear_part, (n_primal_variables,1) ) ]),
-            cvx.reshape( cvx.hstack([ linear_part, constant_part-gamma ]), (1,n_primal_variables+1) )
-        ])
-    problem = cvx.Problem( cvx.Maximize(gamma), [M>>0] )
-    problem.solve( solver=solver, *args, **kwargs )
-    return problem, gamma, lamb, eta
+    if max_fw_iter is None:
+        #
+        # ~~~ Define the semi-definite program according to equation (9) of https://www.princeton.edu/~aaa/Public/Teaching/ORF523/S16/ORF523_S16_Lec12_gh.pdf
+        lamb = cvx.Variable( n_inequality_constraints, nonneg=True ) if n_inequality_constraints>0 else None
+        eta  = cvx.Variable( n_equality_constraints ) if n_equality_constraints>0 else None
+        gamma = cvx.Variable(1)
+        quadratic_part  =  H_o + sum(lamb[i]*H_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*H_J[j] for j in range(n_equality_constraints))
+        linear_part     =  c_o + sum(lamb[i]*c_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*c_J[j] for j in range(n_equality_constraints))
+        constant_part   =  d_o + sum(lamb[i]*d_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*d_J[j] for j in range(n_equality_constraints))
+        M = cvx.vstack([
+                cvx.hstack([ quadratic_part, cvx.reshape( linear_part, (n_primal_variables,1) ) ]),
+                cvx.reshape( cvx.hstack([ linear_part, constant_part-gamma ]), (1,n_primal_variables+1) )
+            ])
+        #
+        # ~~~ Solve it
+        problem = cvx.Problem( cvx.Maximize(gamma), [M>>0] )
+        problem.solve( solver=solver, *args, **kwargs )
+        return problem, gamma.value, lamb.value, eta.value
+    else:
+        raise NotImplementedError
+        A = np.concatenate([ np.stack(H_I), np.stack(H_J) ])
+        b = np.concatenate([ np.stack(c_I), np.stack(c_J) ])
+        c = np.concatenate([ np.stack(d_I), np.stack(d_J) ])
+        Q = H_o
+        r = c_o
+        s = d_o
+        lr = 0.00001
+        eps = 1e-5
+        alpha = 0.5
+        ALPHA = 1.1
+        t = 0
+        theta = np.random.normal( size=(n_inequality_constraints + n_equality_constraints,) )
+        for j in range(n_inequality_constraints):
+            theta[j] = theta[j]**2
+        calq = Q + (theta.reshape(-1,1,1)*A).sum(axis=0)    # ~~~ Q(\theta)     = I + \sum_{j=1}^{k-1} \theta_j A_j
+        beta = r + (theta.reshape(-1,1)*b).sum(axis=0)      # ~~~ \beta(\theta) = r + \sum_{j=1}^{k-1} \theta_j b_j
+        z = np.linalg.solve( calq, beta )
+        with support_for_progress_bars():
+            pbar = tqdm( desc="Solving the Dual Problem Using Frank-Wolfe", total=max_fw_iter, ascii=' >=' )
+            for _ in range(max_fw_iter):
+                #
+                # ~~~ Compute the gradient
+                g = (A@z)@z + b@z + c
+                g *= lr
+                #
+                # ~~~ Perform the Frank-Wolfe sub-routine
+                keep_trying = True
+                while keep_trying:
+                    fw_var = cvx.Variable( n_inequality_constraints + n_equality_constraints )
+                    objective = cvx.Maximize( g@fw_var )
+                    constraints = [
+                            Q + sum( fw_var[j]*A[j] for j in range(n_inequality_constraints+n_equality_constraints) ) >> eps*np.eye(n_primal_variables)
+                        ] + [
+                            fw_var[j] >= 0 for j in range(n_inequality_constraints)
+                        ]
+                    problem = cvx.Problem(objective, constraints)
+                    duality_gap = problem.solve( solver=solver, *args, **kwargs )/lr
+                    if duality_gap == float("inf"):
+                        lr *= alpha
+                        g  *= alpha
+                        # print(f"decreasing learning rate to {lr}")
+                    else:
+                        lr *= ALPHA
+                        alpha = 2/(t+2)
+                        # print(problem.status)
+                        theta = (1-alpha)*theta + alpha*fw_var.value
+                        t += 1
+                        keep_trying = False
+                        # print(f"increasing learning rate to {lr}")
+                calq = Q + (theta.reshape(-1,1,1)*A).sum(axis=0)    # ~~~ Q(\theta)     = I + \sum_{j=1}^{k-1} \theta_j A_j
+                beta = r + (theta.reshape(-1,1)*b).sum(axis=0)      # ~~~ \beta(\theta) = r + \sum_{j=1}^{k-1} \theta_j b_j
+                z = np.linalg.solve( calq, beta )
+                dual_objective_value = np.inner(z,beta) + np.inner(theta,c) + s
+                pbar.set_postfix({
+                        "dual": f"{dual_objective_value:<4.4f}",
+                        "gap" : f"{duality_gap:<4.4f}"
+                    })
+                pbar.update()
+        # calQ  =  H_o + sum(lamb[i]*H_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*H_J[j] for j in range(n_equality_constraints))
+        # beta  =  c_o + sum(lamb[i]*c_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*c_J[j] for j in range(n_equality_constraints))
+        # cnst  =  d_o + sum(lamb[i]*d_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*d_J[j] for j in range(n_equality_constraints))
+        # z = np.linalg.solve( calQ, beta )
+        # dual_objective_value = np.inner(z,beta) + cnst
+        return None
