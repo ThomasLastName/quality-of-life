@@ -306,6 +306,44 @@ def format_value(value):
 print_dict = lambda dict: print(json.dumps( {k: format_value(v) for k, v in dict.items()}, indent=4 ))
 
 #
+# ~~~ Pretty print a matrix
+def print_mat( matrix, roun=3 ):
+    try:
+        m,n = matrix.shape
+    except AttributeError:
+        m = len(matrix)
+        n = len(matrix[0])
+        assert len(set(( len(row) for row in matrix )))==1, "Not all rows have the same length?! This is not a matrix!"
+    except:
+        raise
+    #
+    # ~~~ First, check how much space is needed for each number
+    text_lengths = [0 for _ in range(m*n)]
+    for i in range(m):
+        for j in range(n):
+            text_lengths[i*n+j] = len(str( round(matrix[i][j], roun) ))
+    space = 1+max(text_lengths)
+    #
+    # ~~~ Round the each entry of the matrix to a certain number of decimal places
+    z = [[0] * n for _ in range(m)]
+    for i in range(m):
+        for j in range(n):
+            z[i][j] = round(matrix[i][j], roun)
+    #
+    # ~~~ Print the rounded values, evenly spaced
+    print('')
+    for i in range(m):
+        x = str(z[i])
+        x = x.lstrip('[')
+        x = x.rstrip(']')
+        x = x.split(', ')
+        y = '   '.join([' ', x[0].rjust(space)])
+        for j in range(1, len(x)):
+            y = ' '.join([y, x[j].rjust(space)])
+        print(y)
+    print('')
+
+#
 # ~~~ Get the indices for a train/val/test split based on the desired list of sizes of the data subsets
 def random_indices_by_size( n, group_sizes ):
     if not math.isclose( sum(group_sizes), n ):
