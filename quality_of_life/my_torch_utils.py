@@ -359,7 +359,7 @@ def nonredundant_copy_of_module_list(module_list,sequential=False):
         if layer_type == torch.nn.Linear:
             #
             # ~~~ For linear layers, create a brand new linear layer of the same size independent of the original
-            layers.append(torch.nn.Linear( layer.in_features, layer.out_features ))
+            layers.append(torch.nn.Linear( layer.in_features, layer.out_features, bias=(layer.bias is not None) ))
         else:
             #
             # ~~~ For other layers (activations, Flatten, softmax, etc.) just copy it
