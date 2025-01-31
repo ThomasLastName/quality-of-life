@@ -168,15 +168,15 @@ class GifMaker:
 
 #
 # ~~~ Plot a line from slope and intercept
-def abline( slope, intercept, *args, **kwargs ):   # ~~~ based off https://stackoverflow.com/a/43811762/11595884
-    axes = plt.gca()
-    original_xlim = axes.get_xlim()
-    original_ylim = axes.get_ylim()
+def abline( slope, intercept, *args, ax=None, **kwargs ):   # ~~~ based off https://stackoverflow.com/a/43811762/11595884
+    ax = plt.gca() if (ax is None) else ax
+    original_xlim = ax.get_xlim()
+    original_ylim = ax.get_ylim()
     x_vals = np.array(buffer(original_xlim,multiplier=1))
     y_vals = intercept + slope*x_vals
-    plt.plot( x_vals, y_vals, *args, **kwargs )
-    axes.set_xlim(original_xlim)
-    axes.set_ylim(original_ylim)
+    ax.plot( x_vals, y_vals, *args, **kwargs )
+    ax.set_xlim(original_xlim)
+    ax.set_ylim(original_ylim)
 
 #
 #~~~ Renders the image of a scatter plot overlaid with the graphs of one of more functions (I say "curve" because I'm remembering the R function `curve`)
