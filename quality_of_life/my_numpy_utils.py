@@ -28,10 +28,11 @@ def test_augmented(X):
 
 #
 # ~~~ Attach a column of all 1's to a matrix, if there isn't a column of all 1's alreay
-def augment(X):
+def augment(X,negative=False):
+    sign = -1 if negative else 1
     return X if test_augmented(X) else np.hstack((
             X,
-            np.ones( shape=(X.shape[0],1), dtype=X.dtype )  # assumes that X has dtype and shape attributes
+            sign*np.ones( shape=(X.shape[0],1), dtype=X.dtype )  # assumes that X has dtype and shape attributes
         ))
 
 #
