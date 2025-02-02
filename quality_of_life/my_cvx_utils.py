@@ -126,8 +126,11 @@ def solve_dual_of_QCQP(
         H_J = list(),   # ~~~ H_J is the list of the H_j's
         c_J = list(),   # ~~~ c_J is the list of the c_j's
         d_J = list(),   # ~~~ d_J is the list of the d_j's
+        #
+        # ~~~ Other
         solver = cvx.SCS,
         max_fw_iter = None,
+        debug = False,
         *args,
         **kwargs
     ):
@@ -152,7 +155,10 @@ def solve_dual_of_QCQP(
         # ~~~ Solve it
         problem = cvx.Problem( cvx.Maximize(gamma), [M>>0] )
         problem.solve( solver=solver, *args, **kwargs )
-        return problem, gamma.value, lamb.value, eta.value
+        if eta is not None:
+            return ( problem, gamma.value, lamb.value, eta.value ) if not debug else ( problem, gamma, lamb, eta )
+        else:
+            return ( problem, gamma.value, lamb.value ) if not debug else ( problem, gamma, lamb )
     else:
         raise NotImplementedError
         A = np.concatenate([ np.stack(H_I), np.stack(H_J) ])
