@@ -368,7 +368,7 @@ def nonredundant_copy_of_module_list(module_list,sequential=False):
 
 #
 # ~~~ Return the len(x)-by-len(y) matrix Z matrix with Z[i,j] = f([x[i],y[j]])
-def cartesian_product(f,x,y):
+def cartesian_product(x,y):
     X,Y = torch.meshgrid( x, y, indexing="xy" )
     return torch.column_stack((X.flatten(), Y.flatten())) # ~~~ the result is basically just a rearranged version of list(itertools.product(x,y))
 
