@@ -225,3 +225,52 @@ def solve_dual_of_QCQP(
         # z = np.linalg.solve( calQ, beta )
         # dual_objective_value = np.inner(z,beta) + cnst
         return None
+
+#
+# ~~~ Implement the stated relaxation of (10) of https://www.princeton.edu/~aaa/Public/Teaching/ORF523/S16/ORF523_S16_Lec12_gh.pdf
+def solve_rank_relaxation_of_QCQP(
+        #
+        # ~~~ Objective(x) = x.T@H_o@x + 2*c_o.T@x + d_o
+        H_o,
+        c_o,
+        d_o,
+        #
+        # ~~~ Constrain x.T@H_i@x + 2*c_i.T@x + d_i \leq 0 for each i
+        H_I = list(),   # ~~~ H_I is the list of the H_i's
+        c_I = list(),   # ~~~ c_I is the list of the c_i's
+        d_I = list(),   # ~~~ d_I is the list of the d_i's
+        #
+        # ~~~ Constrain x.T@H_j@x + 2*c_j.T@x + d_j == 0 for each j
+        H_J = list(),   # ~~~ H_J is the list of the H_j's
+        c_J = list(),   # ~~~ c_J is the list of the c_j's
+        d_J = list(),   # ~~~ d_J is the list of the d_j's
+        #
+        # ~~~ Other
+        solver = cvx.SCS,
+        debug = False,
+        *args,
+        **kwargs
+    ):
+    H_o, c_o, d_o, H_I, c_I, d_I, H_J, c_J, d_J = verify_QCQP_assumptions( H_o, c_o, d_o, H_I, c_I, d_I, H_J, c_J, d_J )
+    n_inequality_constraints = len(H_I)
+    n_equality_constraints = len(H_J)
+    n_primal_variables = len(c_o)
+    X = cvx.Variable( (n_primal_variables,n_primal_variables), PSD=True )
+    x = cvx.Variable( n_primal_variables )
+    objective = cvx.Minimize( cvx.trace(H_o@X) + 2*cvx.sum(cvx.multiply(c_o,x)) + d_o )
+    constraints = [ Schur_complement(X,x) ]
+    for i in range(n_inequality_constraints): constraints.append( cvx.trace(H_I[i]@X) + 2*cvx.sum(cvx.multiply(c_I[i],x)) + d_I[i] <= 0 )
+    for j in range(n_equality_constraints): constraints.append( cvx.trace(H_J[j]@X) + 2*cvx.sum(cvx.multiply(c_J[j],x)) + d_J[j] == 0 )
+    problem = cvx.Problem( objective, constraints )
+    problem.solve( solver=solver, *args, **kwargs )
+    return (problem, X.value, x.value) if not debug else (problem,X,x)
+
+#
+# ~~~ Form the constraint X \geq x@x.T
+def Schur_complement( X, x ):
+    m,n = X.shape
+    assert m==n and x.shape==(n,)
+    return cvx.bmat([
+            [ X,                      cvx.reshape(x, (n, 1)) ],
+            [ cvx.reshape(x, (1, n)), np.array([[1.]])       ]
+        ]) >> 0
