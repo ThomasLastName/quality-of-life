@@ -3,7 +3,7 @@
 
 import cvxpy as cvx
 import numpy as np
-from tqdm.auto import tqdm
+from quality_of_life.ansi import bcolors
 from quality_of_life.my_base_utils import my_warn, support_for_progress_bars
 
 
@@ -129,7 +129,6 @@ def solve_dual_of_QCQP(
         #
         # ~~~ Other
         solver = cvx.SCS,
-        max_fw_iter = None,
         debug = False,
         *args,
         **kwargs
@@ -154,10 +153,51 @@ def solve_dual_of_QCQP(
     # ~~~ Solve it
     problem = cvx.Problem( cvx.Maximize(gamma), [M>>0] )
     problem.solve( solver=solver, *args, **kwargs )
-    if eta is not None:
-        return ( problem, gamma.value, lamb.value, eta.value ) if not debug else ( problem, gamma, lamb, eta )
-    else:
-        return ( problem, gamma.value, lamb.value ) if not debug else ( problem, gamma, lamb )
+    #
+    # ~~~ Derive an approximate primal solution
+    primal_available = False
+    try:
+        Q = quadratic_part.value
+        beta = linear_part.value
+        x = np.linalg.solve(Q,-beta) # ~~~ approximately satisfies the constraints and should have gamma.value == x.T@H_o@x + 2*c_o.T@x + d_o if not numerically unstable
+        inequalities = [
+                x.T@H_I[i]@x + 2*c_I[i].T@x + d_I[i]
+                for i in range(n_inequality_constraints)
+            ]
+        violation_of_inequality_constraints = [
+                inequalities[i] if inequalities[i]>0 else 0
+                for i in range(n_inequality_constraints)
+            ]
+        violation_of_equality_constraints = [
+                abs(x.T@H_J[j]@x + 2*c_J[j].T@x + d_J[j])
+                for j in range(n_equality_constraints)
+            ]
+        slackness = [
+                abs(lamb.value[i] * inequalities[i] )
+                for i in range(n_inequality_constraints)
+            ]
+        violations = violation_of_inequality_constraints + violation_of_equality_constraints
+        primal_available = True
+        if abs( (x.T@H_o@x + 2*c_o.T@x + d_o)/gamma.value -1 ) > 1e-3:
+            my_warn(f"Primal solution may be numerically inaccurate.")
+    except np.linalg.LinAlgError as e:
+        my_warn(f"Unable to convert to an apprixate primal solution: {bcolors.FAIL + str(e)}")
+    #
+    # ~~~ Print info
+    with support_for_progress_bars():
+        print("\n"+bcolors.OKBLUE+"--------------\n")
+        print(bcolors.OKGREEN + f"Dual max = {gamma.value}")
+        if primal_available:
+            print("Found approximate solution to primal problem.")
+            print(f"Constraints are approximately satisfied with tolerance {max(violations)}")
+            print(f"Complementary slackness approximately satisfied with tolerance {max(slackness)}")
+        print("\n"+bcolors.OKBLUE+"--------------\n")
+    #
+    # ~~~ Return resutls
+    results = [ problem, gamma, lamb ] if debug else [ problem, gamma.value, lamb.value ]
+    if eta is not None: results.append( eta if debug else eta.value )
+    if primal_available: results.append(x)
+    return results
 
 #
 # ~~~ Implement the stated relaxation of (10) of https://www.princeton.edu/~aaa/Public/Teaching/ORF523/S16/ORF523_S16_Lec12_gh.pdf
