@@ -194,12 +194,12 @@ def solve_dual_of_QCQP(
     # ~~~ Print info
     with support_for_progress_bars():
         print("\n"+bcolors.OKBLUE+"--------------\n")
-        print(bcolors.OKGREEN + f"Dual max = {gamma.value}")
-        print(f"At dual solution, primal Hessian has minimal eigenvalue {minimal_eigenvalue}")
+        print(bcolors.OKGREEN + f"Dual max \geq {gamma.value[0]}")
+        print(f"At dual solution, primal Hessian has minimal eigenvalue = {minimal_eigenvalue}")
         if primal_available:
             print("Found approximate solution to primal problem.")
-            print(f"Constraints are approximately satisfied with tolerance {max(violations)}")
-            print(f"Complementary slackness approximately satisfied with tolerance {max(slackness)}")
+            print(f"Constraints are approximately satisfied with tolerance \leq {max(violations)}")
+            print(f"Complementary slackness approximately satisfied with tolerance \leq {max(slackness)}")
         print("\n"+bcolors.OKBLUE+"--------------\n")
     #
     # ~~~ Return resutls
