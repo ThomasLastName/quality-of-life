@@ -3,6 +3,7 @@
 
 import cvxpy as cvx
 import numpy as np
+import scipy as sp
 from quality_of_life.ansi import bcolors
 from quality_of_life.my_base_utils import my_warn, support_for_progress_bars
 
@@ -129,6 +130,7 @@ def solve_dual_of_QCQP(
         #
         # ~~~ Other
         solver = cvx.SCS,
+        cvx_reg = 0,
         debug = False,
         *args,
         **kwargs
@@ -151,15 +153,18 @@ def solve_dual_of_QCQP(
         ])
     #
     # ~~~ Solve it
-    problem = cvx.Problem( cvx.Maximize(gamma), [M>>0] )
+    constraints = [ M>>0, quadratic_part>>cvx_reg*np.eye(n_primal_variables) ] if cvx_reg>0 else [M>>0]
+    problem = cvx.Problem( cvx.Maximize(gamma), constraints )
     problem.solve( solver=solver, *args, **kwargs )
     #
-    # ~~~ Derive an approximate primal solution
+    # ~~~ Derive an approximate primal solution x, which approxiamtely satisfies the constraints and should have gamma.value == x.T@H_o@x + 2*c_o.T@x + d_o if not numerically unstable
     primal_available = False
     try:
         Q = quadratic_part.value
         beta = linear_part.value
-        x = np.linalg.solve(Q,-beta) # ~~~ approximately satisfies the constraints and should have gamma.value == x.T@H_o@x + 2*c_o.T@x + d_o if not numerically unstable
+        x, exit_code = sp.sparse.linalg.cg(Q,-beta)
+        if exit_code>0:
+            x = np.linalg.pinv(Q)@(-beta)
         inequalities = [
                 x.T@H_I[i]@x + 2*c_I[i].T@x + d_I[i]
                 for i in range(n_inequality_constraints)
@@ -178,8 +183,11 @@ def solve_dual_of_QCQP(
             ]
         violations = violation_of_inequality_constraints + violation_of_equality_constraints
         primal_available = True
+        minimal_eigenvalue = np.linalg.eigvalsh(Q).min()
         if abs( (x.T@H_o@x + 2*c_o.T@x + d_o)/gamma.value -1 ) > 1e-3:
             my_warn(f"Primal solution may be numerically inaccurate.")
+        if minimal_eigenvalue<1e-6:
+            my_warn(f"Small minimal eigenvalue. Considering increasing `cvx_reg` for possibly improved numerical stability.")
     except np.linalg.LinAlgError as e:
         my_warn(f"Unable to convert to an apprixate primal solution: {bcolors.FAIL + str(e)}")
     #
@@ -187,6 +195,7 @@ def solve_dual_of_QCQP(
     with support_for_progress_bars():
         print("\n"+bcolors.OKBLUE+"--------------\n")
         print(bcolors.OKGREEN + f"Dual max = {gamma.value}")
+        print(f"At dual solution, primal Hessian has minimal eigenvalue {minimal_eigenvalue}")
         if primal_available:
             print("Found approximate solution to primal problem.")
             print(f"Constraints are approximately satisfied with tolerance {max(violations)}")
