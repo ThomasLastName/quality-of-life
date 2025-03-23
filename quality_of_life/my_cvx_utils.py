@@ -130,7 +130,8 @@ def solve_dual_of_QCQP(
         #
         # ~~~ Other
         solver = cvx.SCS,
-        cvx_reg = 0,
+        cvx_reg = None,
+        pos_reg = 0,
         debug = False,
         *args,
         **kwargs
@@ -153,7 +154,8 @@ def solve_dual_of_QCQP(
         ])
     #
     # ~~~ Solve it
-    constraints = [ M>>0, quadratic_part>>cvx_reg*np.eye(n_primal_variables) ] if cvx_reg>0 else [M>>0]
+    constraints = [ M>>0, lamb>=pos_reg ]
+    if cvx_reg is not None: constraints.append( quadratic_part>>cvx_reg*np.eye(n_primal_variables) )
     problem = cvx.Problem( cvx.Maximize(gamma), constraints )
     problem.solve( solver=solver, *args, **kwargs )
     #
