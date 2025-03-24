@@ -134,6 +134,8 @@ def solve_dual_of_QCQP(
         pos_reg = 0,
         debug = False,
         print_info = True,
+        epigraph_form = True,
+        force_semidefinite = True,
         *args,
         **kwargs
     ):
@@ -145,20 +147,38 @@ def solve_dual_of_QCQP(
     # ~~~ Define the semi-definite program according to equation (9) of https://www.princeton.edu/~aaa/Public/Teaching/ORF523/S16/ORF523_S16_Lec12_gh.pdf
     lamb = cvx.Variable( n_inequality_constraints, nonneg=True ) if n_inequality_constraints>0 else None
     eta  = cvx.Variable( n_equality_constraints ) if n_equality_constraints>0 else None
-    gamma = cvx.Variable(1)
     quadratic_part  =  H_o + sum(lamb[i]*H_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*H_J[j] for j in range(n_equality_constraints))
     linear_part     =  c_o + sum(lamb[i]*c_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*c_J[j] for j in range(n_equality_constraints))
     constant_part   =  d_o + sum(lamb[i]*d_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*d_J[j] for j in range(n_equality_constraints))
-    M = cvx.vstack([
-            cvx.hstack([ quadratic_part, cvx.reshape( linear_part, (n_primal_variables,1) ) ]),
-            cvx.reshape( cvx.hstack([ linear_part, constant_part-gamma ]), (1,n_primal_variables+1) )
-        ])
+    #
+    # ~~~ Set up constraints
+    constraints = []
+    if pos_reg>0: constraints.append( lamb>=pos_reg )
+    if force_semidefinite:
+        X = cvx.Variable( (n_primal_variables,n_primal_variables), symmetric=True )
+        constraints.append( X>>0 if cvx_reg is None else quadratic_part>>cvx_reg*np.eye(n_primal_variables) )
+        constraints.append( X==quadratic_part )
+        leading_term = X
+    else:
+        if cvx_reg is not None: constraints.append( quadratic_part>>cvx_reg*np.eye(n_primal_variables) )
+        leading_term = quadratic_part
+    if epigraph_form:
+        gamma = cvx.Variable(1) # ~~~ epigraph variable
+        objective = cvx.Maximize(gamma)
+        M = cvx.vstack([
+                cvx.hstack([ leading_term, cvx.reshape( linear_part, (n_primal_variables,1) ) ]),
+                cvx.reshape( cvx.hstack([ linear_part, constant_part-gamma ]), (1,n_primal_variables+1) )
+            ])
+        constraints.append( M>>0 )
+    else:
+        if cvx_reg is None: my_warn("cvx_reg of `None` was speicified. For better results, please consider passing a small positive value.")
+        dual_function = -cvx.matrix_frac( linear_part, leading_term ) + constant_part
+        objective = cvx.Maximize( dual_function )
     #
     # ~~~ Solve it
-    constraints = [ M>>0, lamb>=pos_reg ]
-    if cvx_reg is not None: constraints.append( quadratic_part>>cvx_reg*np.eye(n_primal_variables) )
-    problem = cvx.Problem( cvx.Maximize(gamma), constraints )
+    problem = cvx.Problem( objective, constraints )
     problem.solve( solver=solver, *args, **kwargs )
+    if epigraph_form: dual_function = gamma[0]
     #
     # ~~~ Derive an approximate primal solution x, which approxiamtely satisfies the constraints and should have gamma.value == x.T@H_o@x + 2*c_o.T@x + d_o if not numerically unstable
     primal_available = False
@@ -187,7 +207,7 @@ def solve_dual_of_QCQP(
         violations = violation_of_inequality_constraints + violation_of_equality_constraints
         primal_available = True
         minimal_eigenvalue = np.linalg.eigvalsh(Q).min()
-        if abs( (x.T@H_o@x + 2*c_o.T@x + d_o)/gamma.value -1 ) > 1e-3:
+        if abs( (x.T@H_o@x + 2*c_o.T@x + d_o)/dual_function.value -1 ) > 1e-3:
             my_warn(f"Primal solution may be numerically inaccurate.")
         if minimal_eigenvalue<1e-6:
             my_warn(f"Small minimal eigenvalue. Considering increasing `cvx_reg` for possibly improved numerical stability.")
@@ -198,7 +218,7 @@ def solve_dual_of_QCQP(
     if print_info:
         with support_for_progress_bars():
             print("\n"+bcolors.OKBLUE+"--------------\n")
-            print(bcolors.OKGREEN + f"Dual max \geq {gamma.value[0]}")
+            print(bcolors.OKGREEN + f"Dual max \geq {dual_function.value}")
             print(f"At dual solution, primal Hessian has minimal eigenvalue = {minimal_eigenvalue}")
             if primal_available:
                 print("Found approximate solution to primal problem.")
@@ -207,7 +227,7 @@ def solve_dual_of_QCQP(
             print("\n"+bcolors.OKBLUE+"--------------\n")
     #
     # ~~~ Return resutls
-    results = [ problem, gamma, lamb ] if debug else [ problem, gamma.value, lamb.value ]
+    results = [ problem, lamb ] if debug else [ problem, lamb.value ]
     if eta is not None: results.append( eta if debug else eta.value )
     if primal_available: results.append(x)
     return results
