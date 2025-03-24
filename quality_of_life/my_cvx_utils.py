@@ -133,6 +133,7 @@ def solve_dual_of_QCQP(
         cvx_reg = None,
         pos_reg = 0,
         debug = False,
+        print_info = True,
         *args,
         **kwargs
     ):
@@ -194,15 +195,16 @@ def solve_dual_of_QCQP(
         my_warn(f"Unable to convert to an apprixate primal solution: {bcolors.FAIL + str(e)}")
     #
     # ~~~ Print info
-    with support_for_progress_bars():
-        print("\n"+bcolors.OKBLUE+"--------------\n")
-        print(bcolors.OKGREEN + f"Dual max \geq {gamma.value[0]}")
-        print(f"At dual solution, primal Hessian has minimal eigenvalue = {minimal_eigenvalue}")
-        if primal_available:
-            print("Found approximate solution to primal problem.")
-            print(f"Constraints are approximately satisfied with tolerance \leq {max(violations)}")
-            print(f"Complementary slackness approximately satisfied with tolerance \leq {max(slackness)}")
-        print("\n"+bcolors.OKBLUE+"--------------\n")
+    if print_info:
+        with support_for_progress_bars():
+            print("\n"+bcolors.OKBLUE+"--------------\n")
+            print(bcolors.OKGREEN + f"Dual max \geq {gamma.value[0]}")
+            print(f"At dual solution, primal Hessian has minimal eigenvalue = {minimal_eigenvalue}")
+            if primal_available:
+                print("Found approximate solution to primal problem.")
+                print(f"Constraints are approximately satisfied with tolerance \leq {max(violations)}")
+                print(f"Complementary slackness approximately satisfied with tolerance \leq {max(slackness)}")
+            print("\n"+bcolors.OKBLUE+"--------------\n")
     #
     # ~~~ Return resutls
     results = [ problem, gamma, lamb ] if debug else [ problem, gamma.value, lamb.value ]
