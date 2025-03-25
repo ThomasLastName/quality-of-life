@@ -156,7 +156,7 @@ def solve_dual_of_QCQP(
     if pos_reg>0: constraints.append( lamb>=pos_reg )
     if force_semidefinite:
         X = cvx.Variable( (n_primal_variables,n_primal_variables), symmetric=True )
-        constraints.append( X>>0 if cvx_reg is None else quadratic_part>>cvx_reg*np.eye(n_primal_variables) )
+        constraints.append( X>>0 if cvx_reg is None else X>>cvx_reg*np.eye(n_primal_variables) )
         constraints.append( X==quadratic_part )
         leading_term = X
     else:
@@ -211,7 +211,7 @@ def solve_dual_of_QCQP(
             my_warn(f"Primal solution may be numerically inaccurate.")
         if minimal_eigenvalue<1e-6:
             my_warn(f"Small minimal eigenvalue. Considering increasing `cvx_reg` for possibly improved numerical stability.")
-    except np.linalg.LinAlgError as e:
+    except Exception as e:
         my_warn(f"Unable to convert to an apprixate primal solution: {bcolors.FAIL + str(e)}")
     #
     # ~~~ Print info
