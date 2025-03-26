@@ -171,7 +171,7 @@ def solve_dual_of_QCQP(
             ])
         constraints.append( M>>0 )
     else:
-        if cvx_reg is None: my_warn("cvx_reg of `None` was speicified. For better results, please consider passing a small positive value.")
+        if (cvx_reg is None) and print_info: my_warn("cvx_reg of `None` was speicified. For better results, please consider passing a small positive value.")
         dual_function = -cvx.matrix_frac( linear_part, leading_term ) + constant_part
         objective = cvx.Maximize( dual_function )
     #
@@ -208,9 +208,9 @@ def solve_dual_of_QCQP(
         primal_available = True
         minimal_eigenvalue = np.linalg.eigvalsh(Q).min()
         if abs( (x.T@H_o@x + 2*c_o.T@x + d_o)/dual_function.value -1 ) > 1e-3:
-            my_warn(f"Primal solution may be numerically inaccurate.")
+            if print_info: my_warn(f"Primal solution may be numerically inaccurate.")
         if minimal_eigenvalue<1e-6:
-            my_warn(f"Small minimal eigenvalue. Considering increasing `cvx_reg` for possibly improved numerical stability.")
+            if print_info: my_warn(f"Small minimal eigenvalue. Considering increasing `cvx_reg` for possibly improved numerical stability.")
     except Exception as e:
         my_warn(f"Unable to convert to an apprixate primal solution: {bcolors.FAIL + str(e)}")
     #
