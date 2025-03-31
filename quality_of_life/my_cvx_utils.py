@@ -148,7 +148,7 @@ def solve_dual_of_QCQP(
     H_o, c_o, d_o, H_I, c_I, d_I, H_J, c_J, d_J = verify_QCQP_assumptions( H_o, c_o, d_o, H_I, c_I, d_I, H_J, c_J, d_J )
     n_inequality_constraints = len(H_I)
     n_equality_constraints = len(H_J)
-    n_primal_variables = len(c_o)
+    n_primal_variables = c_o.shape[0]
     #
     # ~~~ Define the semi-definite program according to equation (9) of https://www.princeton.edu/~aaa/Public/Teaching/ORF523/S16/ORF523_S16_Lec12_gh.pdf
     lamb = cvx.Variable( n_inequality_constraints, nonneg=True ) if n_inequality_constraints>0 else None
@@ -266,7 +266,7 @@ def solve_rank_relaxation_of_QCQP(
     H_o, c_o, d_o, H_I, c_I, d_I, H_J, c_J, d_J = verify_QCQP_assumptions( H_o, c_o, d_o, H_I, c_I, d_I, H_J, c_J, d_J )
     n_inequality_constraints = len(H_I)
     n_equality_constraints = len(H_J)
-    n_primal_variables = len(c_o)
+    n_primal_variables = c_o.shape[0]
     X = cvx.Variable( (n_primal_variables,n_primal_variables), PSD=True )
     x = cvx.Variable( n_primal_variables )
     objective = cvx.Minimize( cvx.trace(H_o@X) + 2*cvx.sum(cvx.multiply(c_o,x)) + d_o )
