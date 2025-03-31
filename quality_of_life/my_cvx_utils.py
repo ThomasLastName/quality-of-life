@@ -73,7 +73,7 @@ def verify_QCQP_assumptions(
     #
     # ~~~ Verify several shape assumptions
     assert c_o.ndim == 1
-    n_primal_variables = len(c_o)
+    n_primal_variables = c_o.shape[0]
     assert H_o.shape == (n_primal_variables, n_primal_variables)
     for i in range(n_inequality_constraints):
         assert H_I[i].shape == (n_primal_variables, n_primal_variables)
