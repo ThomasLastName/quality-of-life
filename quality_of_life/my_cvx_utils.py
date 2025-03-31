@@ -129,6 +129,7 @@ def solve_dual_of_QCQP(
         d_J = list(),   # ~~~ d_J is the list of the d_j's
         #
         # ~~~ Other
+        constraints = [],
         solver = cvx.SCS,
         cvx_reg = None,
         pos_reg = 0,
@@ -152,7 +153,6 @@ def solve_dual_of_QCQP(
     constant_part   =  d_o + sum(lamb[i]*d_I[i] for i in range(n_inequality_constraints)) - sum(eta[j]*d_J[j] for j in range(n_equality_constraints))
     #
     # ~~~ Set up constraints
-    constraints = []
     if pos_reg>0: constraints.append( lamb>=pos_reg )
     if force_semidefinite:
         X = cvx.Variable( (n_primal_variables,n_primal_variables), symmetric=True )
@@ -252,6 +252,7 @@ def solve_rank_relaxation_of_QCQP(
         d_J = list(),   # ~~~ d_J is the list of the d_j's
         #
         # ~~~ Other
+        constraints = [],
         solver = cvx.SCS,
         debug = False,
         *args,
@@ -264,7 +265,7 @@ def solve_rank_relaxation_of_QCQP(
     X = cvx.Variable( (n_primal_variables,n_primal_variables), PSD=True )
     x = cvx.Variable( n_primal_variables )
     objective = cvx.Minimize( cvx.trace(H_o@X) + 2*cvx.sum(cvx.multiply(c_o,x)) + d_o )
-    constraints = [ Schur_complement(X,x) ]
+    constraints.append(Schur_complement(X,x))
     for i in range(n_inequality_constraints): constraints.append( cvx.trace(H_I[i]@X) + 2*cvx.sum(cvx.multiply(c_I[i],x)) + d_I[i] <= 0 )
     for j in range(n_equality_constraints): constraints.append( cvx.trace(H_J[j]@X) + 2*cvx.sum(cvx.multiply(c_J[j],x)) + d_J[j] == 0 )
     problem = cvx.Problem( objective, constraints )
