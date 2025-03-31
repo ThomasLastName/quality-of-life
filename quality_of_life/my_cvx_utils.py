@@ -105,7 +105,7 @@ def verify_QCQP_assumptions(
     if any_non_symmetric:
         my_warn("One or more of the supplied matrices was not symmetric. The symmetric part (A+A.T)/2 of any such matrix A will be used instead.")
     #
-    # ~~~ Sanity check
+    # ~~~ Sanity check (check that these operations throw no error)
     x = np.random.normal(size=(n_primal_variables,))
     _ = np.inner(x,H_o@x) + np.inner(c_o,x) + d_o if isinstance( H_o, np.ndarray ) else H_o@x
     for i in range(n_inequality_constraints): _ = np.inner(x,H_I[i]@x) + np.inner(c_I[i],x) + d_I[i]
