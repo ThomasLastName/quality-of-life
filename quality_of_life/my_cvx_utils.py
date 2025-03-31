@@ -84,9 +84,16 @@ def verify_QCQP_assumptions(
     #
     # ~~~ Enforce symmetry assumptions
     any_non_symmetric = False
-    if not np.array_equal(H_o,H_o.T):
-        H_o = (H_o + H_o.T)/2
-        any_non_symmetric = True
+    if isinstance( H_o, np.ndarray ):
+        if not np.array_equal(H_o,H_o.T):
+            H_o = (H_o + H_o.T)/2
+            any_non_symmetric = True
+    else:
+        symmetry_test = cvx.Problem( cvx.Minimize(0), [H_o==H_o.T] )
+        symmetry_test.solve(solver=cvx.SCS)
+        if not ( symmetry_test.status == "optimal" ):
+            H_o = (H_o + H_o.T)/2
+            any_non_symmetric = True
     for i in range(n_inequality_constraints):
         if not np.array_equal( H_I[i], H_I[i].T ):
             H_I[i] = ( H_I[i] + H_I[i].T )/2
@@ -100,11 +107,9 @@ def verify_QCQP_assumptions(
     #
     # ~~~ Sanity check
     x = np.random.normal(size=(n_primal_variables,))
-    _ = np.inner(x,H_o@x) + np.inner(c_o,x) + d_o
-    for i in range(n_inequality_constraints):
-        _ = np.inner(x,H_I[i]@x) + np.inner(c_I[i],x) + d_I[i]
-    for j in range(n_equality_constraints):
-        _ = np.inner(x,H_J[j]@x) + np.inner(c_J[j],x) + d_J[j]
+    _ = np.inner(x,H_o@x) + np.inner(c_o,x) + d_o if isinstance( H_o, np.ndarray ) else H_o@x
+    for i in range(n_inequality_constraints): _ = np.inner(x,H_I[i]@x) + np.inner(c_I[i],x) + d_I[i]
+    for j in range(n_equality_constraints): _ = np.inner(x,H_J[j]@x) + np.inner(c_J[j],x) + d_J[j]
     #
     # ~~~ Return the processed problem data
     return H_o, c_o, d_o, H_I, c_I, d_I, H_J, c_J, d_J
