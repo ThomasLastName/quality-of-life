@@ -216,7 +216,7 @@ def solve_dual_of_QCQP(
         # if abs( (x.T@H_o@x + 2*c_o.T@x + d_o)/dual_function.value -1 ) > 1e-3 and print_info: my_warn(f"Primal solution may be numerically inaccurate.")
         if minimal_eigenvalue<1e-6 and print_info: my_warn(f"Small minimal eigenvalue. Considering increasing `cvx_reg` for possibly improved numerical stability.")
     except Exception as e:
-        my_warn(f"Unable to convert to an apprixate primal solution: {bcolors.FAIL + str(e)}")
+        my_warn(f"Unable to convert to an approximate primal solution: {bcolors.FAIL + str(e)}")
     #
     # ~~~ Print info
     if print_info:
