@@ -233,7 +233,7 @@ def solve_dual_of_QCQP(
     # ~~~ Return resutls
     results = [ problem, lamb ] if debug else [ problem, lamb.value ]
     if eta is not None: results.append( eta if debug else eta.value )
-    if primal_available: results.append(x)
+    results.append( x if primal_available else None )
     return results
 
 #
