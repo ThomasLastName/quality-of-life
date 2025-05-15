@@ -26,7 +26,7 @@ def dict_to_json( dict, path_including_file_extension, override=False, verbose=T
     #
     # ~~~ If the file path is either available, or the user gave permission to over-ride it, then proceed to write there
     with open(path_including_file_extension,'w') as fp:
-        json.dump(dict,fp)
+        json.dump( dict, fp, indent=4 )
     #
     # ~~~ Print helpful messages
     if verbose:
