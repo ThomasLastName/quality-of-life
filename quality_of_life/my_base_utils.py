@@ -6,6 +6,7 @@ import warnings
 import traceback
 import sys
 import os
+import re
 import json
 import math
 import random
@@ -35,11 +36,17 @@ def dict_to_json( dict, path_including_file_extension, override=False, verbose=T
         print(f"Created {path_including_file_extension} at {os.path.abspath(path_including_file_extension)}")
 
 #
-# ~~~ Load a .json as a dictionary; from https://stackoverflow.com/a/7100202/11595884
+# ~~~ Load a .json as a dictionary (https://chatgpt.com/share/683b4261-cef8-8001-8ca5-d63a2cb637b2)
 def json_to_dict(path_including_file_extension):
-    with open(path_including_file_extension,'r') as fp:
-        dict = json.load(fp)
-    return dict
+    with open(path_including_file_extension, "r") as fp:
+        #
+        # ~~~ Remove // comments from the end of the line (or whole line if it starts with // after leading spaces)
+        content = "".join(
+            re.sub(r"//.*", "", line)
+            for line in fp
+            if not line.strip().startswith("//")
+        )
+    return json.loads(content)
 
 #
 # ~~~ Return the truth value of the statement that `dict` is identical to `other_dict`
