@@ -5,6 +5,7 @@ import sys
 import math
 import torch
 from tqdm import tqdm
+from copy import deepcopy
 from quality_of_life.my_base_utils import support_for_progress_bars, my_warn
 
 #
@@ -352,19 +353,13 @@ def set_flat_grads(model,flat_grads):
 
 #
 # ~~~ Helper function which creates a new instance of the supplied sequential architeture
-def nonredundant_copy_of_module_list(module_list,sequential=False):
-    architecture = [ (type(layer),layer) for layer in module_list ]
+def nonredundant_copy_of_module_list(module_list, sequential=False):
     layers = []
-    for layer_type, layer in architecture:
-        if layer_type == torch.nn.Linear:
-            #
-            # ~~~ For linear layers, create a brand new linear layer of the same size independent of the original
-            layers.append(torch.nn.Linear( layer.in_features, layer.out_features, bias=(layer.bias is not None) ))
-        else:
-            #
-            # ~~~ For other layers (activations, Flatten, softmax, etc.) just copy it
-            layers.append(layer)
-    return torch.nn.Sequential(*layers) if sequential else torch.nn.ModuleList(layers)
+    for layer in module_list:
+        new_layer = deepcopy(layer)
+        if hasattr( new_layer, "reset_parameters" ): new_layer.reset_parameters()
+        layers.append(new_layer)
+    return nn.Sequential(*layers) if sequential else nn.ModuleList(layers)
 
 #
 # ~~~ Return the len(x)-by-len(y) matrix Z matrix with Z[i,j] = f([x[i],y[j]])
