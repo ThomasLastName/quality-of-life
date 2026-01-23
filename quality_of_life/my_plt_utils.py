@@ -30,7 +30,7 @@ def close_all_figures():
 class GifMaker:
     #
     # ~~~ Instantiate what is essentially just a list of images
-    def __init__( self, path_or_name="my_gif", ram_only=True, live_frame_duration=0.01 ):
+    def __init__( self, path_or_name=os.path.join("gifs","my_gif"), ram_only=True, live_frame_duration=0.01 ):
         #
         # ~~~ Baseic attributes
         self.frames   = []          # ~~~ the list of images
@@ -123,7 +123,7 @@ class GifMaker:
             images = [ Image.open(file) for file in self.frames ]
         #
         # ~~~ Process destination path
-        destination = self.master_path if destination is None else destination                                      # ~~~ default to the path used for temp storage (which, itself, defaults to os.getcwd()+"my_gif")
+        destination = self.master_path if destination is None else destination                                      # ~~~ default to the path used for temp storage (which, itself, defaults to os.getcwd()/"gifs"/"my_gif")
         destination = os.path.join( os.getcwd(), destination ) if os.path.dirname(destination)=="" else destination # ~~~ if the destination path is just a filename, consider it as a file within the os.getcwd()
         destination = process_for_saving(destination.replace(".gif","")+".gif")                                     # ~~~ add `.gif` if not already preasent, turn "file_name.gif" into "file_name (1).gif", etc.
         #
