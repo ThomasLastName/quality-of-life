@@ -243,7 +243,7 @@ def points_with_curves(
         grid = module.linspace( min(xlim), max(xlim), 1001 )
     if ylim is None and crop_ylim:
         ylim = buffer(y,multiplier=0.2)
-    curve_thicknesses = [min(0.5,3/n_curves)]*n_curves if curve_thicknesses is None else curve_thicknesses[:n_curves]
+    curve_thicknesses = [max(0.5,3/n_curves)]*n_curves if curve_thicknesses is None else curve_thicknesses[:n_curves]
     #
     #~~~ Facilitate my most common use case: the plot to be rendered is meant to visualize a model's fit
     if (curve_labels is None) and (curve_marks is None) and model_fit:
@@ -281,7 +281,7 @@ def points_with_curves(
     assert len(curves) <= len(curve_labels)
     assert len(curves) <= len(curve_colors)
     assert (fig=="new")==(ax=="new")    # either both new, or neither new
-    #        
+    #
     #~~~ Do the thing
     fig,ax = plt.subplots(figsize=figsize) if (fig=="new" and ax=="new") else (fig,ax)   # supplied by user in the latter case
     ax.plot( x, y, point_mark, markersize=marker_size, color=marker_color, label=(points_label if legend else "") )
@@ -300,7 +300,15 @@ def points_with_curves(
             # ~~~ Transfer grid and curve_on_grid to cpu, if they are pytorch tensors on gpu
             grid = grid.cpu() if hasattr(grid,"cpu") else grid
             curve_on_grid = curve_on_grid.cpu() if hasattr(curve_on_grid,"cpu") else curve_on_grid
-            ax.plot( grid, curve_on_grid, curve_marks[i], curve_thicknesses[i], color=curve_colors[i], label=(curve_labels[i] if legend else ""), alpha=curve_alphas[i] )
+            ax.plot(
+                    grid,
+                    curve_on_grid,
+                    linestyle = curve_marks[i],
+                    linewidth = curve_thicknesses[i],
+                    color = curve_colors[i],
+                    label = (curve_labels[i] if legend else ""),
+                    alpha = curve_alphas[i]
+                )
     #
     #~~~ Further aesthetic configurations
     ax.set_xlim(xlim)
