@@ -140,8 +140,8 @@ class GifMaker:
         total_duration = float(total_duration)
         #
         # ~~~ Save the thing
-        if verbose:
-            print(f"Saving gif of length {total_duration:.3} sec. at {destination}")
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        if verbose: print(f"Saving gif of length {total_duration:.3} sec. at {destination}")
         images[0].save( destination, save_all=True, append_images=images[1:], duration=int(1000/fps), loop=loop, **kwargs )
         self.desination = destination   # ~~~ store the save directory as an attribute for later reference
         #
